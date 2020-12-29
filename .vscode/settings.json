@@ -1,3 +1,11 @@
 {
-    "git.ignoreLimitWarning": true
+    "git.ignoreLimitWarning": true,
+    "files.watcherExclude": {
+        "**/node_modules/*/**": false,
+        "**/WOOFnode_modules/*/**": true
+    },
+    "search.exclude": {
+        "**/node_modules": false,
+        "**/woOFnode_modules": true
+    }
 }

@@ -1,22 +1,37 @@
-const path = require("path");
+//const path = require("path");
 const repo_config = require("./config/repo_config");
 const dayjs = require("dayjs");
 const duration = require("dayjs/plugin/duration");
 const { Engine, Task, utils, vm } = require("yajsapi");
-const { program } = require("commander");
+const {ExtractBestMove} = require("./helpers/best-move-extractor");
 
+const WrappedEmitter = require("./wrapped-emitter");
+//const { program } = require("commander");
+
+const events = require("./event-emitter");
 const ChessPath = require("./helpers/chess-temp-path-helper");
 var fs = require('fs');
 dayjs.extend(duration);
 
+console.log("extract : "+ExtractBestMove("  bestmove e2e4 ponder e7e6  "));
+
 const { asyncWith, logUtils, range } = utils;
 
-var globalGameId=123;
-var globalStep=1;
 
-async function PerformGolemCalculations(gameId, gameStep, subnetTag) {
+LogChess = function LogChess(data)
+{
+  console.log("!!!!!!!!!!!!!!!!!!!!!!!!!! " +  JSON.stringify(data, null, 4));
+
+}
+
+LogMoveData = (data) => `[turnID]: ${data.turnId}, [gameId]: ${data.gameId}, [gameStep]: ${data.gameStep}`;
+
+async function PerformGolemCalculations(moveData, subnetTag) {
+  const {turnId, gameId, gameStep} = moveData;
+  events.emit("calculation_requested",{gameId,gameStep});
+
   Paths = new ChessPath(gameId,gameStep);
-  const _package = await vm.repo(repo_config.docker_id, repo_config.min_ram, repo_config.min_disk);
+  const _package = await vm.repo(repo_config.docker_id, repo_config.min_ram, repo_config.min_disk,repo_config.min_cpu);
   console.log("input path: "+Paths.InputFilePath);
 
   console.log(Paths.OutputFolder);
@@ -34,8 +49,8 @@ if(!fs.existsSync(Paths.InputFolder))
   async function* worker(ctx, tasks) {
     
     for await (let task of tasks) {
-
-      console.log("*** worker starts");
+      events.emit("calculation_started",{gameId,gameStep});
+      console.log("*** worker starts // " + LogMoveData(moveData));
       //var task_id=task.data();
       console.log("*** sending chessboard [" + Paths.InputFilePath+"]" + " >> " + fs.readFileSync(Paths.InputFilePath,"utf8"));
  
@@ -54,7 +69,6 @@ if(!fs.existsSync(Paths.InputFolder))
         task.reject_task(msg="invalid file");
         console.log("*** task rejected !");      
       }
-      
     }
     return;
   }
@@ -70,25 +84,28 @@ if(!fs.existsSync(Paths.InputFolder))
       "0.02",
       undefined,
       subnetTag,
-      logUtils.logSummary()
+      logUtils.logSummary(WrappedEmitter)
+      //LogChess
     ),
     async (engine) => {
       for await (let subtask of engine.map(
         worker,
         Subtasks.map((frame) => new Task(frame))
       )) {
-        console.log("*** result =====> ", fs.readFileSync(subtask.output(),"utf8"));
+        var bestmove= ExtractBestMove( fs.readFileSync(subtask.output(),"utf8"));
+        console.log("*** result =====> ", bestmove);
+
+        events.emit("calculation_completed",{gameId,gameStep,bestmove});
       }
     }
   );
   return;
 }
 
-let subnet="community.3";
 
 
 
-//utils.changeLogLevel("debug");
-console.log(`Using subnet: ${subnet}`);
 
-PerformGolemCalculations(globalGameId,globalStep, subnet);
+module.exports = {
+  PerformGolemCalculations
+}

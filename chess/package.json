@@ -3,13 +3,14 @@
     "version": "0.1",
     "description": "Chess on Golem",
     "scripts": {
-        "js:chess": "node ./chess/chess.js",
+        "js:chess": "node ./chess/index.js",
         "clean": "rimraf node_modules/ yarn.lock || echo 'Project is already clean'"
     },
     "author": "Paweł Burgchardt <pawel.burgchardt@gmail.com>",
     "license": "LGPL-3.0",
     "dependencies": {
         "bluebird": "^3.5.0",
+        "chess.js": "^0.11.0",
         "dayjs": "^1.8.31",
         "ts-node": "^9.0.0",
         "yajsapi": "^0.2.1"
