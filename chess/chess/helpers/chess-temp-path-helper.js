@@ -9,6 +9,7 @@ class ChessTempPathHelper {
 
       this.OutputFilePath = path.join(this.OutputFolder, this.DefaultFileName);
       this.InputFilePath = path.join(this.InputFolder, this.DefaultFileName);
+      this.ChessBoardFilePath = path.join(this.InputFolder, "chessboard_"+this.DefaultFileName);
       
       this.OutputLogFilePath = path.join(this.OutputFolder,"log_"+this.DefaultFileName);
 

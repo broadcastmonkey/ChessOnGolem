@@ -26,8 +26,16 @@ LogChess = function LogChess(data)
 
 LogMoveData = (data) => `[turnID]: ${data.turnId}, [gameId]: ${data.gameId}, [gameStep]: ${data.gameStep}`;
 
+
+
+
+
 async function PerformGolemCalculations(moveData, subnetTag) {
-  const {turnId, gameId, gameStep} = moveData;
+  const {turnId, gameId, gameStep,chess} = moveData;
+  var completed=false;
+  
+
+
   events.emit("calculation_requested",{gameId,gameStep});
 
   Paths = new ChessPath(gameId,gameStep);
@@ -46,9 +54,21 @@ if(!fs.existsSync(Paths.InputFolder))
   fs.mkdirSync(Paths.InputFolder,{ recursive: true });
 }
 
+
+
+// save fen position to file
+
+fs.writeFileSync(Paths.ChessBoardFilePath,chess.ascii());
+fs.writeFileSync(Paths.InputFilePath,"position fen " + chess.fen());
+
+
   async function* worker(ctx, tasks) {
     
     for await (let task of tasks) {
+
+      
+      
+
       events.emit("calculation_started",{gameId,gameStep});
       console.log("*** worker starts // " + LogMoveData(moveData));
       //var task_id=task.data();
@@ -91,15 +111,17 @@ if(!fs.existsSync(Paths.InputFolder))
       for await (let subtask of engine.map(
         worker,
         Subtasks.map((frame) => new Task(frame))
-      )) {
+      )) 
+      
+      {
         var bestmove= ExtractBestMove( fs.readFileSync(subtask.output(),"utf8"));
         console.log("*** result =====> ", bestmove);
-
+        completed=true;
         events.emit("calculation_completed",{gameId,gameStep,bestmove});
       }
     }
   );
-  return;
+  return completed;
 }
 
 

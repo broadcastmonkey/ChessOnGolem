@@ -1,12 +1,18 @@
 const {PerformGolemCalculations} = require("./chess");
+const { Chess } = require('chess.js')
+const chess = new Chess();
 
 
+
+
+
+console.log("chess: \n"+chess.ascii());
 
 
 
 const events = require("./event-emitter");
 const { eventNames } = require("./event-emitter");
-
+const fs = require('fs'); 
 
 let subnet="community.3";
 //utils.changeLogLevel("debug");
@@ -18,12 +24,36 @@ var globalTurn="w"
 
 
 
-var ListenerCalculationCompleted = function ListenerCalculationCompleted(data) {
+var ListenerCalculationCompleted = async function ListenerCalculationCompleted(data) {
     console.log('calculation_completed executed. ' + JSON.stringify(data, null, 4));
+
+    chess.move(data.bestmove,{sloppy:true});
 
     globalStep++;
     globalTurn = globalTurn==="w"?"b":"w";
-    PerformGolemCalculations({turnId:globalTurn,gameId:globalGameId,gameStep:globalStep}, subnet);
+
+    if(chess.in_stalemate())
+    {
+       console.log("!!!! stalemate !!!!!");
+       return;
+    }
+
+    if(chess.game_over())
+    {
+       console.log("!!!! game over !!!!!");
+       return;
+    }
+    while(true)
+    {
+      var success = await PerformGolemCalculations({turnId:globalTurn,gameId:globalGameId,gameStep:globalStep,chess}, subnet);
+      if(success)
+      {
+         console.log("*** PerformGolemCalculations succeeded")
+         break;
+      }else{
+         console.log("*** PerformGolemCalculations failed... restarting")
+      }
+   }
 
  }
 
@@ -42,4 +72,4 @@ events.addListener('calculation_completed', ListenerCalculationCompleted);
 
 events.on("",(data)=>console.log("lalalalala" + data));
 
- PerformGolemCalculations({turnId:globalTurn,gameId:globalGameId,gameStep:globalStep}, subnet);
+ PerformGolemCalculations({turnId:globalTurn,gameId:globalGameId,gameStep:globalStep,chess}, subnet);
