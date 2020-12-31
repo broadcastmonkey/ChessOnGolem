@@ -34,6 +34,7 @@
             this.ListChessboardFiles = new System.Windows.Forms.ListBox();
             this.LblChessPiecesWhite = new System.Windows.Forms.Label();
             this.LblChessPiecesBlack = new System.Windows.Forms.Label();
+            this.LblMove = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // BtnNext
@@ -44,6 +45,7 @@
             this.BtnNext.TabIndex = 0;
             this.BtnNext.Text = "button1";
             this.BtnNext.UseVisualStyleBackColor = true;
+            this.BtnNext.Visible = false;
             this.BtnNext.Click += new System.EventHandler(this.BtnNext_Click);
             // 
             // TxtChessboard
@@ -63,6 +65,7 @@
             this.BrnPrev.TabIndex = 2;
             this.BrnPrev.Text = "button2";
             this.BrnPrev.UseVisualStyleBackColor = true;
+            this.BrnPrev.Visible = false;
             // 
             // ListChessboardFiles
             // 
@@ -76,26 +79,39 @@
             // LblChessPiecesWhite
             // 
             this.LblChessPiecesWhite.AutoSize = true;
-            this.LblChessPiecesWhite.Location = new System.Drawing.Point(195, 458);
+            this.LblChessPiecesWhite.Font = new System.Drawing.Font("Microsoft Sans Serif", 30F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(254)));
+            this.LblChessPiecesWhite.Location = new System.Drawing.Point(125, 458);
             this.LblChessPiecesWhite.Name = "LblChessPiecesWhite";
-            this.LblChessPiecesWhite.Size = new System.Drawing.Size(35, 13);
+            this.LblChessPiecesWhite.Size = new System.Drawing.Size(126, 46);
             this.LblChessPiecesWhite.TabIndex = 4;
             this.LblChessPiecesWhite.Text = "label1";
             // 
             // LblChessPiecesBlack
             // 
             this.LblChessPiecesBlack.AutoSize = true;
-            this.LblChessPiecesBlack.Location = new System.Drawing.Point(295, 458);
+            this.LblChessPiecesBlack.Font = new System.Drawing.Font("Microsoft Sans Serif", 30F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(254)));
+            this.LblChessPiecesBlack.Location = new System.Drawing.Point(268, 458);
             this.LblChessPiecesBlack.Name = "LblChessPiecesBlack";
-            this.LblChessPiecesBlack.Size = new System.Drawing.Size(35, 13);
+            this.LblChessPiecesBlack.Size = new System.Drawing.Size(126, 46);
             this.LblChessPiecesBlack.TabIndex = 5;
             this.LblChessPiecesBlack.Text = "label2";
+            // 
+            // LblMove
+            // 
+            this.LblMove.AutoSize = true;
+            this.LblMove.Font = new System.Drawing.Font("Microsoft Sans Serif", 30F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(254)));
+            this.LblMove.Location = new System.Drawing.Point(533, 458);
+            this.LblMove.Name = "LblMove";
+            this.LblMove.Size = new System.Drawing.Size(126, 46);
+            this.LblMove.TabIndex = 6;
+            this.LblMove.Text = "label1";
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(715, 521);
+            this.Controls.Add(this.LblMove);
             this.Controls.Add(this.LblChessPiecesBlack);
             this.Controls.Add(this.LblChessPiecesWhite);
             this.Controls.Add(this.ListChessboardFiles);
@@ -103,7 +119,7 @@
             this.Controls.Add(this.TxtChessboard);
             this.Controls.Add(this.BtnNext);
             this.Name = "Form1";
-            this.Text = "Form1";
+            this.Text = "Chess on Golem  //  chessboard viewer";
             this.Load += new System.EventHandler(this.Form1_Load);
             this.ResumeLayout(false);
             this.PerformLayout();
@@ -118,6 +134,7 @@
         private System.Windows.Forms.ListBox ListChessboardFiles;
         private System.Windows.Forms.Label LblChessPiecesWhite;
         private System.Windows.Forms.Label LblChessPiecesBlack;
+        private System.Windows.Forms.Label LblMove;
     }
 }
 

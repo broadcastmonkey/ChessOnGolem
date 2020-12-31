@@ -58,8 +58,9 @@ if(!fs.existsSync(Paths.InputFolder))
 
 // save fen position to file
 
+var depth = turnId=="w"?17:8;
 fs.writeFileSync(Paths.ChessBoardFilePath,chess.ascii());
-fs.writeFileSync(Paths.InputFilePath,"position fen " + chess.fen());
+fs.writeFileSync(Paths.InputFilePath,depth+"\n"+"position fen " + chess.fen());
 
 
   async function* worker(ctx, tasks) {
@@ -72,14 +73,14 @@ fs.writeFileSync(Paths.InputFilePath,"position fen " + chess.fen());
       events.emit("calculation_started",{gameId,gameStep});
       console.log("*** worker starts // " + LogMoveData(moveData));
       //var task_id=task.data();
-      console.log("*** sending chessboard [" + Paths.InputFilePath+"]" + " >> " + fs.readFileSync(Paths.InputFilePath,"utf8"));
+      console.log("*** sending chessboard [" + Paths.InputFilePath+"]" + " >> \n" + fs.readFileSync(Paths.InputFilePath,"utf8"));
  
       ctx.send_file(Paths.InputFilePath, "/golem/work/input.txt");
       ctx.run("/bin/sh",["-c","node /golem/code2/chess_engine/bestmove.js > /golem/work/output2.txt"]);
 
       ctx.download_file("/golem/work/output.txt", Paths.OutputFilePath);
       ctx.download_file("/golem/work/output2.txt", Paths.OutputLogFilePath);
-      console.log("*** downloading result for depth (19) ... ");      
+      console.log("*** downloading result for depth ("+depth+") ... ");      
       yield ctx.commit();
       if(fs.readFileSync(Paths.OutputFilePath,"utf8").includes("bestmove"))
       {
@@ -94,7 +95,7 @@ fs.writeFileSync(Paths.InputFilePath,"position fen " + chess.fen());
   }
 
   const Subtasks = range(0, 1, 1);
-  const timeout = dayjs.duration({ minutes: 15 }).asMilliseconds();
+  const timeout = dayjs.duration({ minutes: 6 }).asMilliseconds();
 
   await asyncWith(
     await new Engine(

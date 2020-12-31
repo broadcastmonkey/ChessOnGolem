@@ -1,0 +1,1 @@
+/usr/local/bin/node /golem/code2/chess_engine/bestmove.js

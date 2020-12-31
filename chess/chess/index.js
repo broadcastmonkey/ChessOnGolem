@@ -17,7 +17,7 @@ const fs = require('fs');
 let subnet="community.3";
 //utils.changeLogLevel("debug");
 console.log(`Using subnet: ${subnet}`);
-var globalGameId=123;
+var globalGameId=127;
 var globalStep=1;
 var globalTurn="w"
 
@@ -31,6 +31,9 @@ var ListenerCalculationCompleted = async function ListenerCalculationCompleted(d
 
     globalStep++;
     globalTurn = globalTurn==="w"?"b":"w";
+
+
+    console.log("====================\n\n"+chess.ascii()+"\n\n===================");
 
     if(chess.in_stalemate())
     {
@@ -72,4 +75,21 @@ events.addListener('calculation_completed', ListenerCalculationCompleted);
 
 events.on("",(data)=>console.log("lalalalala" + data));
 
- PerformGolemCalculations({turnId:globalTurn,gameId:globalGameId,gameStep:globalStep,chess}, subnet);
+ 
+PerformGolemCalculations({turnId:globalTurn,gameId:globalGameId,gameStep:globalStep,chess}, subnet);
+
+/*
+
+xxx = async () =>{  while(true)
+    {
+      var success = await 
+      if(success)
+      {
+         console.log("*** PerformGolemCalculations succeeded")
+         break;
+      }else{
+         console.log("*** PerformGolemCalculations failed... restarting")
+      }
+   }
+}
+xxx();*/

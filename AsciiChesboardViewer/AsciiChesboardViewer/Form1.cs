@@ -12,7 +12,7 @@ namespace AsciiChesboardViewer
 {
     public partial class Form1 : Form
     {
-        String PATH = @"D:\js\chess_on_golem\node_chess_app\chess\tmp\game_123\input";
+        String PATH = @"D:\js\chess_on_golem\node_chess_app\chess\tmp\game_124\input";
         public Form1()
         {
             InitializeComponent();
@@ -32,6 +32,7 @@ namespace AsciiChesboardViewer
 
         private void ListChessboardFiles_SelectedIndexChanged(object sender, EventArgs e)
         {
+            LblMove.Text = (ListChessboardFiles.SelectedIndex + 1).ToString();
             TxtChessboard.Text = System.IO.File.ReadAllText(ListChessboardFiles.SelectedItem.ToString()).Replace("\n","\r\n");
 
             Dictionary<char, int> ValueMap = new Dictionary<char, int>();
