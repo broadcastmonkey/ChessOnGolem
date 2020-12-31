@@ -17,7 +17,7 @@ const fs = require('fs');
 let subnet="community.3";
 //utils.changeLogLevel("debug");
 console.log(`Using subnet: ${subnet}`);
-var globalGameId=127;
+var globalGameId=128;
 var globalStep=1;
 var globalTurn="w"
 
