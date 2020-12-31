@@ -38,12 +38,14 @@ var ListenerCalculationCompleted = async function ListenerCalculationCompleted(d
     if(chess.in_stalemate())
     {
        console.log("!!!! stalemate !!!!!");
+       console.log(chess.ascii());
        return;
     }
 
     if(chess.game_over())
     {
        console.log("!!!! game over !!!!!");
+       console.log(chess.ascii());
        return;
     }
     while(true)

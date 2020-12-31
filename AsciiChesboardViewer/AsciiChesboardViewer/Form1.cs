@@ -12,7 +12,7 @@ namespace AsciiChesboardViewer
 {
     public partial class Form1 : Form
     {
-        String PATH = @"D:\js\chess_on_golem\node_chess_app\chess\tmp\game_124\input";
+        String PATH = @"D:\js\chess_on_golem\node_chess_app\chess\tmp\game_127\input";
         public Form1()
         {
             InitializeComponent();
