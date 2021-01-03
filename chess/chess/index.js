@@ -3,6 +3,7 @@ const { Chess } = require("chess.js");
 const express = require("express");
 
 const ChessServerClass = require("./sockets/sockets");
+
 const chess = new Chess();
 
 const app = express();
@@ -34,6 +35,8 @@ var ListenerCalculationCompleted = async function ListenerCalculationCompleted(
   );
 
   chess.move(data.bestmove, { sloppy: true });
+
+  ChessServer.sendChessPosition(chess.fen());
 
   ChessServer.sendChessMove(data.bestmove);
   globalStep++;
@@ -78,9 +81,18 @@ var ListenerCalculationRequested = function ListenerCalculationRequested(data) {
   );
 };
 
+var workerFailed = function workerFailed(data) {
+  console.log(
+    "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!  worker failed. " +
+      JSON.stringify(data, null, 4)
+  );
+  ChessServer.sendChessMove;
+};
+
 events.addListener("calculation_requested", ListenerCalculationRequested);
 events.addListener("calculation_started", ListenerCalculationStarted);
 events.addListener("calculation_completed", ListenerCalculationCompleted);
+events.addListener("worker_failed", workerFailed);
 
 events.on("", (data) => console.log("lalalalala" + data));
 
@@ -106,7 +118,7 @@ xxx = async () =>{  while(true)
 xxx();*/
 
 function myFunc(arg) {
-  ChessServer.sendChessMove("ewe4");
+  ChessServer.sendChessMove("test");
 }
 
-//setInterval(myFunc, 1500, "funky");
+setInterval(myFunc, 3500, "funky");

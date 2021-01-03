@@ -5,12 +5,16 @@ var commonEmitter = require("./commonEvents").commonEmitter;
 class ChessSocketServer {
   users = [];
 
+  lastPosition = "start";
+
   getUserBySocketId = (socketId) => {
     return this.users.find((user) => user.id === socketId);
   };
   addUser = ({ id }) => {
-    const existingUser = this.users.find((user) => user.id === user.id);
+    const existingUser = this.users.find((user) => user.id === id);
     if (existingUser) {
+      console.log("user already exists...");
+      console.log(existingUser);
       return { error: `socket ${id} is already connected` };
     }
     const user = { id, lastPing: 0 };
@@ -41,12 +45,35 @@ class ChessSocketServer {
       socket.on("disconnect", () => {
         this.handleDisconnect(socket);
       });
+      socket.on("adminEvent", (message, callback) => {
+        this.handleAdminEventMessage(socket, message, callback);
+      });
     });
   }
 
+  workerFailed = (worker) => {
+    console.log(">>>>>>>>>>>> sending worker failed ... " + worker);
+    this.io.to("chess").emit("workerFailed", { worker });
+  };
+
   sendChessMove = (move) => {
-    console.log("sending move... " + move);
+    console.log(">>>>>>>>>>>> sending move... " + move);
     this.io.to("chess").emit("moveEvent", { move });
+  };
+
+  sendChessPosition = (fen) => {
+    this.lastPosition = fen;
+    console.log(">>>>>>>>>>>> sending position... " + fen);
+    this.io.to("chess").emit("positionEvent", { fen });
+  };
+  handleAdminEventMessage = (socket, message, callback) => {
+    console.log("adminEvent", message);
+
+    if (message.eventName == "killServer") {
+      process.exit(1);
+    }
+
+    if (callback) callback(); // obj: successfuly joined ?
   };
 
   handleJoin = async (socket, param, callback) => {
@@ -66,7 +93,8 @@ class ChessSocketServer {
 
     console.log("user added", user);
     socket.join("chess");
-    // if (callback) callback(room); // obj: successfuly joined ?
+    this.io.to("chess").emit("positionEvent", { fen: this.lastPosition });
+    if (callback) callback("chess"); // obj: successfuly joined ?
   };
 
   handleDisconnect = (socket) => {
