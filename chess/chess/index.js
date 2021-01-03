@@ -1,84 +1,93 @@
-const {PerformGolemCalculations} = require("./chess");
-const { Chess } = require('chess.js')
+const { PerformGolemCalculations } = require("./chess");
+const { Chess } = require("chess.js");
+const express = require("express");
+
+const ChessServerClass = require("./sockets/sockets");
 const chess = new Chess();
 
+const app = express();
+const port = 3970; // ===> config
+const server = app.listen(port, () =>
+  console.log(`Listening on port ${port}...`)
+);
 
+const ChessServer = new ChessServerClass(app, server);
 
-
-
-console.log("chess: \n"+chess.ascii());
-
-
+console.log("chess: \n" + chess.ascii());
 
 const events = require("./event-emitter");
 const { eventNames } = require("./event-emitter");
-const fs = require('fs'); 
+const fs = require("fs");
 
-let subnet="community.3";
+let subnet = "community.3";
 //utils.changeLogLevel("debug");
 console.log(`Using subnet: ${subnet}`);
-var globalGameId=128;
-var globalStep=1;
-var globalTurn="w"
+var globalGameId = 128;
+var globalStep = 1;
+var globalTurn = "w";
 
+var ListenerCalculationCompleted = async function ListenerCalculationCompleted(
+  data
+) {
+  console.log(
+    "calculation_completed executed. " + JSON.stringify(data, null, 4)
+  );
 
+  chess.move(data.bestmove, { sloppy: true });
 
+  ChessServer.sendChessMove(data.bestmove);
+  globalStep++;
+  globalTurn = globalTurn === "w" ? "b" : "w";
 
-var ListenerCalculationCompleted = async function ListenerCalculationCompleted(data) {
-    console.log('calculation_completed executed. ' + JSON.stringify(data, null, 4));
+  console.log(
+    "====================\n\n" + chess.ascii() + "\n\n==================="
+  );
 
-    chess.move(data.bestmove,{sloppy:true});
+  if (chess.in_stalemate()) {
+    console.log("!!!! stalemate !!!!!");
+    console.log(chess.ascii());
+    return;
+  }
 
-    globalStep++;
-    globalTurn = globalTurn==="w"?"b":"w";
-
-
-    console.log("====================\n\n"+chess.ascii()+"\n\n===================");
-
-    if(chess.in_stalemate())
-    {
-       console.log("!!!! stalemate !!!!!");
-       console.log(chess.ascii());
-       return;
+  if (chess.game_over()) {
+    console.log("!!!! game over !!!!!");
+    console.log(chess.ascii());
+    return;
+  }
+  while (true) {
+    var success = await PerformGolemCalculations(
+      { turnId: globalTurn, gameId: globalGameId, gameStep: globalStep, chess },
+      subnet
+    );
+    if (success) {
+      console.log("*** PerformGolemCalculations succeeded");
+      break;
+    } else {
+      console.log("*** PerformGolemCalculations failed... restarting");
     }
+  }
+};
 
-    if(chess.game_over())
-    {
-       console.log("!!!! game over !!!!!");
-       console.log(chess.ascii());
-       return;
-    }
-    while(true)
-    {
-      var success = await PerformGolemCalculations({turnId:globalTurn,gameId:globalGameId,gameStep:globalStep,chess}, subnet);
-      if(success)
-      {
-         console.log("*** PerformGolemCalculations succeeded")
-         break;
-      }else{
-         console.log("*** PerformGolemCalculations failed... restarting")
-      }
-   }
+var ListenerCalculationStarted = function ListenerCalculationStarted(data) {
+  console.log("calculation_started executed. " + JSON.stringify(data, null, 4));
+};
 
- }
+var ListenerCalculationRequested = function ListenerCalculationRequested(data) {
+  console.log(
+    "calculation_requested executed. " + JSON.stringify(data, null, 4)
+  );
+};
 
- var ListenerCalculationStarted = function ListenerCalculationStarted(data) {
-    console.log('calculation_started executed. ' + JSON.stringify(data, null, 4));
- }
+events.addListener("calculation_requested", ListenerCalculationRequested);
+events.addListener("calculation_started", ListenerCalculationStarted);
+events.addListener("calculation_completed", ListenerCalculationCompleted);
 
- var ListenerCalculationRequested = function ListenerCalculationRequested(data) {
-    console.log('calculation_requested executed. ' + JSON.stringify(data, null, 4));
- }
+events.on("", (data) => console.log("lalalalala" + data));
 
-events.addListener('calculation_requested', ListenerCalculationRequested);
-events.addListener('calculation_started', ListenerCalculationStarted);
-events.addListener('calculation_completed', ListenerCalculationCompleted);
-
-
-events.on("",(data)=>console.log("lalalalala" + data));
-
- 
-PerformGolemCalculations({turnId:globalTurn,gameId:globalGameId,gameStep:globalStep,chess}, subnet);
+PerformGolemCalculations(
+  { turnId: globalTurn, gameId: globalGameId, gameStep: globalStep, chess },
+  subnet
+);
 
 /*
 
@@ -95,3 +104,9 @@ xxx = async () =>{  while(true)
    }
 }
 xxx();*/
+
+function myFunc(arg) {
+  ChessServer.sendChessMove("ewe4");
+}
+
+//setInterval(myFunc, 1500, "funky");
