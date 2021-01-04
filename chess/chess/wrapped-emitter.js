@@ -65,10 +65,12 @@ class WrappedEmitter {
         events.emit("worker_failed", { workerName: "workerName" });
       }
     } else if (eventName === events.WorkerFinished.name) {
-      console.log(JSON.stringify(event, null, 4));
+      console.log(`@@@@@@@@@@@@@@@@@@@@ TASK ${this.TaskId} /  worker failed`);
+
+      /*   console.log(JSON.stringify(event, null, 4));
       if (event["exception"] !== null) {
         events.emit("worker_failed", { workerName: "workerName" });
-      }
+      }*/
     } else if (eventName === events.InvoiceReceived.name) {
       const provider_name = this.agreement_provider_name[event["agr_id"]];
       let cost = this.provider_cost[provider_name] || 0;
