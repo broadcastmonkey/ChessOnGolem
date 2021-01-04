@@ -18,13 +18,13 @@ const ExtractBestMove = (data) => {
         .trim();
     }
 
-    if (line_2.includes("exec time:"))
-      bestmove.time = line_2.substring(
-        line_2.indexOf("exec time:") + "exec time:".length
+    if (line_1.includes("exec time:"))
+      bestmove.time = line_1.substring(
+        line_1.indexOf("exec time:") + "exec time:".length
       );
 
-    if (line_1.includes("depth:"))
-      bestmove.depth = line_1.substring(
+    if (line_2.includes("depth:"))
+      bestmove.depth = line_2.substring(
         line_2.indexOf("depth:") + "depth:".length
       );
     if (line_3.includes("hash:"))

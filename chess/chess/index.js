@@ -17,9 +17,6 @@ const ChessServer = new ChessServerClass(app, server);
 console.log("chess: \n" + chess.ascii());
 
 const events = require("./event-emitter");
-const { eventNames } = require("./event-emitter");
-const fs = require("fs");
-
 let subnet = "community.3";
 //utils.changeLogLevel("debug");
 console.log(`Using subnet: ${subnet}`);
@@ -83,24 +80,54 @@ var ListenerCalculationCompleted = async function ListenerCalculationCompleted(
   }
 };
 
+var ListenerAgreementCreated = function ListenerAgreementCreated(data) {
+  false &&
+    console.log("agreement_created executed. " + JSON.stringify(data, null, 4));
+  ChessServer.agreementCreated(data);
+};
+
+var ListenerComputationFinished = function ListenerComputationFinished(data) {
+  false &&
+    console.log(
+      "computation_finished executed. " + JSON.stringify(data, null, 4)
+    );
+  ChessServer.computationFinished(data);
+};
+
+var ListenerAgreementConfirmed = function ListenerAgreementConfirmed(data) {
+  false &&
+    console.log(
+      "agreement_confirmed executed. " + JSON.stringify(data, null, 4)
+    );
+  ChessServer.agreementConfirmed(data);
+};
+
 var ListenerCalculationStarted = function ListenerCalculationStarted(data) {
-  console.log("calculation_started executed. " + JSON.stringify(data, null, 4));
+  false &&
+    console.log(
+      "calculation_started executed. " + JSON.stringify(data, null, 4)
+    );
 };
 
 var ListenerCalculationRequested = function ListenerCalculationRequested(data) {
-  console.log(
-    "calculation_requested executed. " + JSON.stringify(data, null, 4)
-  );
+  false &&
+    console.log(
+      "calculation_requested executed. " + JSON.stringify(data, null, 4)
+    );
 };
 
 var workerFailed = function workerFailed(data) {
+  //false &&
   console.log(
     "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!  worker failed. " +
       JSON.stringify(data, null, 4)
   );
-  ChessServer.sendChessMove;
+  ChessServer.workerFailed(data);
 };
 
+events.addListener("computation_finished", ListenerComputationFinished);
+events.addListener("agreement_created", ListenerAgreementCreated);
+events.addListener("agreement_confirmed", ListenerAgreementConfirmed);
 events.addListener("calculation_requested", ListenerCalculationRequested);
 events.addListener("calculation_started", ListenerCalculationStarted);
 events.addListener("calculation_completed", ListenerCalculationCompleted);

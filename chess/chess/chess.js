@@ -107,7 +107,7 @@ async function PerformGolemCalculations(moveData, subnetTag) {
       "0.02",
       undefined,
       subnetTag,
-      logUtils.logSummary()
+      logUtils.logSummary(emitter.Process)
       //LogChess
     ),
     async (engine) => {

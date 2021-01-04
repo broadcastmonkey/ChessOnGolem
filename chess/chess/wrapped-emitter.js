@@ -1,4 +1,4 @@
-var commonEmitter = require("./sockets/commonEvents").commonEmitter;
+const eventsEmitter = require("./event-emitter");
 var __setModuleDefault =
   (this && this.__setModuleDefault) ||
   (Object.create
@@ -50,52 +50,86 @@ class WrappedEmitter {
 
   Process = (event) => {
     const eventName = event.constructor.name;
-    console.log(
-      `@@@@@@@@@@@@@@@@@@@@ TASK ${this.TaskId} / EVENT : #${eventName}#'`
-    );
+    false &&
+      console.log(
+        `@@@@@@@@@@@@@@@@@@@@ TASK ${this.TaskId} / EVENT : #${eventName}#'`
+      );
     //console.log(this);
     // console.log("..." + events.ComputationStarted.name);
     if (eventName === events.ComputationStarted.name) {
-      console.log(
-        `@@@@@@@@@@@@@@@@@@@@ TASK ${this.TaskId} /  computation started`
-      );
-      // this.reset();
+      false &&
+        console.log(
+          `@@@@@@@@@@@@@@@@@@@@ TASK ${this.TaskId} /  computation started`
+        );
+      this.reset();
     } else if (eventName === events.CommandExecuted.name) {
       if (!event["success"]) {
-        events.emit("worker_failed", { workerName: "workerName" });
+        const provider_name = this.agreement_provider_name[event["agr_id"]];
+        eventsEmitter.emit("worker_failed", { workerName: provider_name });
       }
     } else if (eventName === events.WorkerFinished.name) {
-      console.log(`@@@@@@@@@@@@@@@@@@@@ TASK ${this.TaskId} /  worker failed`);
+      false &&
+        console.log(
+          `@@@@@@@@@@@@@@@@@@@@ TASK ${this.TaskId} /  worker failed`
+        );
 
-      /*   console.log(JSON.stringify(event, null, 4));
+      false && console.log(JSON.stringify(event, null, 4));
       if (event["exception"] !== null) {
-        events.emit("worker_failed", { workerName: "workerName" });
-      }*/
+        eventsEmitter.emit("worker_failed", { workerName: "workerName" });
+      }
     } else if (eventName === events.InvoiceReceived.name) {
       const provider_name = this.agreement_provider_name[event["agr_id"]];
       let cost = this.provider_cost[provider_name] || 0;
       cost += parseFloat(event["amount"]);
       this.provider_cost[provider_name] = cost;
-      console.log(
-        ` @@@@@@@@@@@@@@@@@@@@@@ TASK ${this.TaskId} /  Received an invoice from ${provider_name}. Amount: ${event["amount"]}; (so far: ${cost} from this provider).`
-      );
+      false &&
+        console.log(
+          ` @@@@@@@@@@@@@@@@@@@@@@ TASK ${this.TaskId} /  Received an invoice from ${provider_name}. Amount: ${event["amount"]}; (so far: ${cost} from this provider).`
+        );
     } else if (eventName === events.AgreementCreated.name) {
       let provider_name = event["provider_id"].name.value;
       if (!provider_name) {
         numbers++;
         provider_name = `provider-${numbers}`;
       }
-      console.log(
-        `@@@@@@@@@@@@@@@@@@@@ TASK ${this.TaskId} /  Agreement proposed to provider '${provider_name}'`
-      );
+      false &&
+        console.log(
+          `@@@@@@@@@@@@@@@@@@@@ TASK ${this.TaskId} /  Agreement proposed to provider '${provider_name}'`
+        );
+
+      eventsEmitter.emit("agreement_created", {
+        workerName: provider_name,
+        taskId: this.TaskId,
+      });
+
+      this.agreement_provider_name[event["agr_id"]] = provider_name;
+    } else if (eventName === events.AgreementConfirmed.name) {
+      let provider_name = this.agreement_provider_name[event["agr_id"]];
+
+      false &&
+        console.log(
+          `@@@@@@@@@@@@@@@@@@@@ TASK ${this.TaskId} /  Agreement confirmed by provider '${provider_name}'`
+        );
+
+      eventsEmitter.emit("agreement_confirmed", {
+        workerName: provider_name,
+        taskId: this.TaskId,
+      });
+
       this.agreement_provider_name[event["agr_id"]] = provider_name;
     } else if (eventName === events.ComputationFinished.name) {
-      hrend = process.hrtime(start_time);
+      var hrend = process.hrtime(this.start_time);
+
       const timeInMs = (hrend[0] * 1000000000 + hrend[1]) / 1000000;
 
-      console.log(
-        `@@@@@@@@@@@@@@@@@@@@ TASK ${this.TaskId} / total calculation time of  is ${timeInMs}'`
-      );
+      false &&
+        console.log(
+          `****************************** TASK ${this.TaskId} / total calculation time of  is ${timeInMs}'`
+        );
+      eventsEmitter.emit("computation_finished", {
+        time: timeInMs,
+        taskId: this.TaskId,
+      });
     }
   };
 }

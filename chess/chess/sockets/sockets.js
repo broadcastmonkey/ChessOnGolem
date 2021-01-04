@@ -1,6 +1,6 @@
 const socketIO = require("socket.io"); // sock
 
-var commonEmitter = require("./commonEvents").commonEmitter;
+var commonEmitter = require("../event-emitter");
 
 class ChessSocketServer {
   users = [];
@@ -53,12 +53,25 @@ class ChessSocketServer {
 
   workerFailed = (worker) => {
     console.log(">>>>>>>>>>>> sending worker failed ... " + worker);
-    this.io.to("chess").emit("workerFailed", { worker });
+    this.io.to("chess").emit("workerFailed", worker);
+  };
+
+  agreementCreated = (agreement) => {
+    console.log(">>>>>>>>>>>> sending agreement created ... " + agreement);
+    this.io.to("chess").emit("agreementCreated", agreement);
+  };
+  agreementConfirmed = (agreement) => {
+    console.log(">>>>>>>>>>>> sending agreement confirmed ... " + agreement);
+    this.io.to("chess").emit("agreementConfirmed", agreement);
+  };
+  computationFinished = (computation) => {
+    console.log(">>>>>>>>>>>> sending computation finished ... " + computation);
+    this.io.to("chess").emit("computationFinished", computation);
   };
 
   sendChessMove = (move) => {
     console.log(">>>>>>>>>>>> sending move... " + move);
-    this.io.to("chess").emit("moveEvent", { move });
+    this.io.to("chess").emit("moveEvent", move);
   };
 
   sendChessPosition = (fen) => {
