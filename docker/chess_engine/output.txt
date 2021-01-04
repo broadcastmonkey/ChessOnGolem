@@ -1,1 +1,4 @@
-bestmove d2d4 ponder e7e6
+bestmove e2e4 ponder e7e6
+exec time:1985.984599
+depth:17
+hash:hash22

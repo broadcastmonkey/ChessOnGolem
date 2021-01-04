@@ -70,7 +70,7 @@ class ChessSocketServer {
     console.log("adminEvent", message);
 
     if (message.eventName == "killServer") {
-      process.exit(1);
+      process.exit(0);
     }
 
     if (callback) callback(); // obj: successfuly joined ?

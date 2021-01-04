@@ -23,7 +23,7 @@ const fs = require("fs");
 let subnet = "community.3";
 //utils.changeLogLevel("debug");
 console.log(`Using subnet: ${subnet}`);
-var globalGameId = 128;
+var globalGameId = 130;
 var globalStep = 1;
 var globalTurn = "w";
 
@@ -34,7 +34,14 @@ var ListenerCalculationCompleted = async function ListenerCalculationCompleted(
     "calculation_completed executed. " + JSON.stringify(data, null, 4)
   );
 
-  chess.move(data.bestmove, { sloppy: true });
+  chess.move(data.bestmove.move, { sloppy: true });
+
+  console.log(
+    "--------------------- docker image calculation (depth:" +
+      data.bestmove.depth +
+      ") time: " +
+      data.bestmove.time
+  );
 
   ChessServer.sendChessPosition(chess.fen());
 
@@ -49,12 +56,17 @@ var ListenerCalculationCompleted = async function ListenerCalculationCompleted(
   if (chess.in_stalemate()) {
     console.log("!!!! stalemate !!!!!");
     console.log(chess.ascii());
+
+    //chess.reset();
+
     return;
   }
 
   if (chess.game_over()) {
     console.log("!!!! game over !!!!!");
     console.log(chess.ascii());
+
+    //chess.reset();
     return;
   }
   while (true) {
@@ -121,4 +133,4 @@ function myFunc(arg) {
   ChessServer.sendChessMove("test");
 }
 
-setInterval(myFunc, 3500, "funky");
+//setInterval(myFunc, 3500, "funky");
