@@ -13,6 +13,17 @@ To show how computing power could affect outcome of the game each player is allo
 
 This particulat project is designed as a GUI to backend project running Golem Network.
 
+### DEMO's
+
+Demo v0.3
+https://www.youtube.com/watch?v=Wp_lJEeN7UA&feature=youtu.be&ab_channel=Pawe%C5%82Burgchardt
+
+Demo v0.2
+https://www.youtube.com/watch?v=C65uTAZAsRA&list=UUxg1Vq50vwy7Pm3kFwb0ZQg&index=2&ab_channel=Pawe%C5%82Burgchardt
+
+Demo v0.1 (problem with some providers' payments ==> invoices that are way too huge)
+https://www.youtube.com/watch?v=cTD0zq7jURM&list=UUxg1Vq50vwy7Pm3kFwb0ZQg&index=3&ab_channel=Pawe%C5%82Burgchardt
+
 ### Subprojects used in development
 
 #### Node Chess App
