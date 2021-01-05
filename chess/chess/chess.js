@@ -143,7 +143,7 @@ async function PerformGolemCalculations(moveData, subnetTag) {
       setTimeout(() => {
         emitter.Stop();
         engine.done();
-      }, 30000);
+      }, 90 * 1000);
 
       events.emit("calculation_completed", { gameId, gameStep, bestmove });
     }
