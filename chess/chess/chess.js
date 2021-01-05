@@ -1,4 +1,3 @@
-//const path = require("path");
 const repo_config = require("./config/repo_config");
 const dayjs = require("dayjs");
 const duration = require("dayjs/plugin/duration");
@@ -80,6 +79,7 @@ async function PerformGolemCalculations(moveData, subnetTag) {
       ctx.download_file("/golem/work/output2.txt", Paths.OutputLogFilePath);
       console.log("*** downloading result for depth (" + depth + ") ... ");
       yield ctx.commit();
+
       if (fs.readFileSync(Paths.OutputFilePath, "utf8").includes("bestmove")) {
         task.accept_task(Paths.OutputFilePath);
         console.log("*** task completed succesfully !");
@@ -106,29 +106,6 @@ async function PerformGolemCalculations(moveData, subnetTag) {
     //LogChess
   );
   await asyncWith(engine, async (engine) => {
-    /*  simpleTask = new Task(0);
-
-      for await (let result of engine.map(worker, [simpleTask])) {
-        console.log("result ===>");
-        console.log(result);
-
-        var bestmove = ExtractBestMove(
-          fs.readFileSync(result.output(), "utf8")
-        );
-
-        console.log(
-          "*** result =====> ",
-          bestmove.move +
-            " time: " +
-            bestmove.time +
-            ", depth:" +
-            bestmove.depth
-        );
-        completed = true;
-        events.emit("calculation_completed", { gameId, gameStep, bestmove });
-      }
-*/
-
     for await (let subtask of engine.map(
       worker,
       Subtasks.map((frame) => new Task(frame))
@@ -147,21 +124,22 @@ async function PerformGolemCalculations(moveData, subnetTag) {
         );
         completed = true;
 
-        setTimeout(() => {
-          emitter.Stop();
-          engine.done();
-        }, 360 * 1000);
+        /*setTimeout(() => {
+          //emitter.Stop();
+          // engine.done();
+        }, 360 * 1000);*/
 
         events.emit("calculation_completed", { gameId, gameStep, bestmove });
+        return true;
       } else {
-        engine.done();
-        emitter.Stop();
+        //engine.done();
+        //emitter.Stop();
         return false;
       }
     }
   });
-  engine.done();
-  emitter.Stop();
+  //engine.done();
+  //emitter.Stop();
   return completed;
 }
 

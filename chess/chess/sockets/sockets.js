@@ -6,8 +6,11 @@ class ChessSocketServer {
   users = [];
 
   lastPosition = "start";
-  lastMoveData = {};
+  lastMoveData = null;
   lastMoves = {};
+
+  gameFinishedWinner = "";
+  gameFinishedType = "";
 
   getUserBySocketId = (socketId) => {
     return this.users.find((user) => user.id === socketId);
@@ -73,7 +76,12 @@ class ChessSocketServer {
     this.io.to("chess").emit("movesRefreshed", moves);
     this.lastMoves = moves;
   };
-
+  gameFinished = (game) => {
+    this.gameFinishedWinner = game.winner;
+    this.gameFinishedType = game.type;
+    //console.log(">>>>>>>>>>>> sending game finished ... " + taskId);
+    this.io.to("chess").emit("gameFinished", game);
+  };
   offersReceived = (data) => {
     console.log(
       ">>>>>>>>>>>> taskId: " +
@@ -140,8 +148,16 @@ class ChessSocketServer {
     console.log("user added", user);
     socket.join("chess");
     this.io.to("chess").emit("positionEvent", { fen: this.lastPosition });
-    this.io.to("chess").emit("currentTurnEvent", this.lastMoveData);
+    if (this.lastMoveData !== null)
+      this.io.to("chess").emit("currentTurnEvent", this.lastMoveData);
     this.io.to("chess").emit("movesRefreshed", this.lastMoves);
+
+    if (this.gameFinishedWinner !== "") {
+      this.io.to("chess").emit("gameFinished", {
+        winner: this.gameFinishedWinner,
+        type: this.gameFinishedType,
+      });
+    }
     if (callback) callback("chess"); // obj: successfuly joined ?
   };
 
