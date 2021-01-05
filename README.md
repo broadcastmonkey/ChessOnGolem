@@ -43,7 +43,7 @@ https://github.com/broadcastmonkey/ChessOnGolemViewer
 
 React application that serves as GUI for displaying chess game progress for Chess on Golem.
 
-It displays game progress and some interesing stats regarding provider nodes that took part in calculations
+It displays game progress and some interesting stats regarding provider nodes that took part in calculations.
 
 There is live demo available at:
 http://chess-on-golem-viewer.herokuapp.com/
