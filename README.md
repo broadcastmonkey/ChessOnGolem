@@ -11,8 +11,6 @@ Whole game is managed by Node.js server which distributes computing tasks across
 Each move request is put into Golem Market and calculated by provider that puts best offer.
 To show how computing power could affect outcome of the game each player is allowed to calculate next move with particular depth. (With enough provider nodes in network that could be achieved without forcing one of players to ask for computations with lower depth than opponent)
 
-This particulat project is designed as a GUI to backend project running Golem Network.
-
 ### DEMO's
 
 Demo v0.3
