@@ -58,7 +58,7 @@ If It's not running you can request start at pawel.burgchardt [ A-T] gmail.com
 - run npm install / npm start in chess-front folder
 - enjoy chess game played by two golem AIs at http://localhost:3000/
 
-## Potential grow
+## Potential growth
 
 - player vs golem mode
 - other state based games implemented
