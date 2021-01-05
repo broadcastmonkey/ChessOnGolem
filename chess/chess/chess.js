@@ -133,19 +133,31 @@ async function PerformGolemCalculations(moveData, subnetTag) {
       worker,
       Subtasks.map((frame) => new Task(frame))
     )) {
-      var bestmove = ExtractBestMove(fs.readFileSync(subtask.output(), "utf8"));
-      console.log(
-        "*** result =====> ",
-        bestmove.move + " time: " + bestmove.time + ", depth:" + bestmove.depth
-      );
-      completed = true;
+      if (fs.existsSync(subtask.output())) {
+        var bestmove = ExtractBestMove(
+          fs.readFileSync(subtask.output(), "utf8")
+        );
+        console.log(
+          "*** result =====> ",
+          bestmove.move +
+            " time: " +
+            bestmove.time +
+            ", depth:" +
+            bestmove.depth
+        );
+        completed = true;
 
-      setTimeout(() => {
-        emitter.Stop();
+        setTimeout(() => {
+          emitter.Stop();
+          engine.done();
+        }, 90 * 1000);
+
+        events.emit("calculation_completed", { gameId, gameStep, bestmove });
+      } else {
         engine.done();
-      }, 90 * 1000);
-
-      events.emit("calculation_completed", { gameId, gameStep, bestmove });
+        emitter.Stop();
+        return false;
+      }
     }
   });
   engine.done();
