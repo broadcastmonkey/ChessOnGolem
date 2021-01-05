@@ -36,9 +36,12 @@ Node.js Server that can be run on linux or windows machines that is responsible 
 Is used also as backend server for GUI App that displayes chess game in real time with some statistics regarding provider nodes work.
 (ChessOnGolemViewer => https://github.com/broadcastmonkey/ChessOnGolemViewer)
 
+(also in this repository)
+
 #### Chess on Golem Viewer
 
 https://github.com/broadcastmonkey/ChessOnGolemViewer
+(also in this repository)
 
 React application that serves as GUI for displaying chess game progress for Chess on Golem.
 
