@@ -152,7 +152,7 @@ class WrappedEmitter {
       eventsEmitter.emit("invoice_received", {
         taskId: this.TaskId,
         providerName: provider_name,
-        totalCost: cost,
+        totalCost: event["amount"] /*cost,*/,
         eventCost: event["amount"],
       });
       this.Log(
