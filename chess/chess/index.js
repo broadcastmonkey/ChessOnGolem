@@ -47,7 +47,7 @@ PerformGolemCalculationsWrapper = async function (moveData) {
   Moves[moveData.taskId].depth = moveData.depth;
   Moves[moveData.taskId].turn = moveData.turnId == "w" ? "white" : "black";
 
-  await PerformGolemCalculations(moveData, subnet);
+  return await PerformGolemCalculations(moveData, subnet);
 };
 
 var ListenerCalculationCompleted = async function ListenerCalculationCompleted(
