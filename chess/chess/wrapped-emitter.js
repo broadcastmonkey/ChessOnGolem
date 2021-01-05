@@ -31,6 +31,7 @@ class WrappedEmitter {
 
     this.TaskId = task;
     this.numbers = 0;
+    this.Active = true;
   }
 
   reset = () => {
@@ -45,10 +46,19 @@ class WrappedEmitter {
     this.provider_failures = {};
     this.finished = false;
     this.error_occurred = false;
+    this.offersCount = 0;
     // time_waiting_for_proposals = dayjs_1.default.duration(0);
+  };
+  Stop = () => {
+    console.log("stopping emitter " + this.TaskId);
+    this.Active = false;
   };
 
   Process = (event) => {
+    if (this.TaskId === undefined || this.TaskId === null) return;
+    if (this.Active === false) {
+      return;
+    }
     const eventName = event.constructor.name;
     false &&
       console.log(
@@ -57,36 +67,98 @@ class WrappedEmitter {
     //console.log(this);
     // console.log("..." + events.ComputationStarted.name);
     if (eventName === events.ComputationStarted.name) {
+      if (this.Active === false) return;
       false &&
         console.log(
           `@@@@@@@@@@@@@@@@@@@@ TASK ${this.TaskId} /  computation started`
         );
+      eventsEmitter.emit("computation_started", { taskId: this.TaskId });
       this.reset();
-    } else if (eventName === events.CommandExecuted.name) {
-      if (!event["success"]) {
-        const provider_name = this.agreement_provider_name[event["agr_id"]];
-        eventsEmitter.emit("worker_failed", { workerName: provider_name });
-      }
-    } else if (eventName === events.WorkerFinished.name) {
+    } else if (eventName === events.NoProposalsConfirmed.name) {
+      if (this.Active === false) return;
+      /*this.time_waiting_for_proposals = this.time_waiting_for_proposals.add({
+        millisecond: parseInt(event["timeout"]),
+      });
+      let msg;
+      if (event["num_offers"] === 0)
+        msg = `No offers have been collected from the market for
+      ${this.time_waiting_for_proposals.asSeconds()}s. `;
+      else
+        msg = `${
+          event["num_offers"]
+        } offers have been collected from the market, but no provider has responded for ${this.time_waiting_for_proposals.asSeconds()}s. `;
+      msg +=
+        "Make sure you're using the latest released versions of yagna and yajsapi, and the correct subnet.";
+      logger.warn(msg);*/
+    } /* else if (eventName === events.ProposalReceived.name) {
+      /* if (this.Active === false) return;
+      this.offersCount++;
       false &&
         console.log(
-          `@@@@@@@@@@@@@@@@@@@@ TASK ${this.TaskId} /  worker failed`
+          `@@@@@@@@@@@@@@@@@@@@ TASK ${this.TaskId} /  offers: ${this.offersCount}...`
         );
 
-      false && console.log(JSON.stringify(event, null, 4));
+      eventsEmitter.emit("offers_received", {
+        offersCount: this.offersCount,
+        taskId: this.TaskId,
+      });*/ else if (
+      /*} */
+      eventName === events.ProposalReceived.name
+    ) {
+      this.received_proposals[event["prop_id"]] = event["provider_id"];
+    } else if (eventName === events.ProposalConfirmed.name) {
+      this.confirmed_proposals.add(event["prop_id"]);
+      const confirmed_providers = new Set(
+        [...this.confirmed_proposals].map(
+          (prop_id) => this.received_proposals[prop_id]
+        )
+      );
+      eventsEmitter.emit("offers_received", {
+        offersCount: confirmed_providers.size,
+        taskId: this.TaskId,
+      });
+    } else if (eventName === events.CommandExecuted.name) {
+      if (this.Active === false) return;
+      if (!event["success"]) {
+        const provider_name = this.agreement_provider_name[event["agr_id"]];
+        eventsEmitter.emit("provider_failed", {
+          taskId: this.TaskId,
+          providerName: provider_name,
+        });
+      }
+    } else if (eventName === events.WorkerFinished.name) {
+      if (this.Active === false) return;
+      true &&
+        console.log(
+          `@@@@@@@@@@@@@@@@@@@@ TASK ${this.TaskId} /  worker finished...`
+        );
+      const provider_name = this.agreement_provider_name[event["agr_id"]];
+      true && console.log(JSON.stringify(event, null, 4));
       if (event["exception"] !== null) {
-        eventsEmitter.emit("worker_failed", { workerName: "workerName" });
+        eventsEmitter.emit("provider_failed", {
+          taskId: this.TaskId,
+          providerName: provider_name,
+        });
       }
     } else if (eventName === events.InvoiceReceived.name) {
+      console.log("@@@@@@@@@@@@@@@@@@@@ INVOICE ");
       const provider_name = this.agreement_provider_name[event["agr_id"]];
       let cost = this.provider_cost[provider_name] || 0;
       cost += parseFloat(event["amount"]);
       this.provider_cost[provider_name] = cost;
-      false &&
-        console.log(
-          ` @@@@@@@@@@@@@@@@@@@@@@ TASK ${this.TaskId} /  Received an invoice from ${provider_name}. Amount: ${event["amount"]}; (so far: ${cost} from this provider).`
-        );
+
+      console.log(
+        ` @@@@@@@@@@@@@@@@@@@@@@ TASK ${this.TaskId} /  Received an invoice from ${provider_name}. Amount: ${event["amount"]}; (so far: ${cost} from this provider).`
+      );
+
+      eventsEmitter.emit("invoice_received", {
+        taskId: this.TaskId,
+        providerName: provider_name,
+        totalCost: cost,
+        eventCost: event["amount"],
+      });
     } else if (eventName === events.AgreementCreated.name) {
+      if (this.Active === false) return;
       let provider_name = event["provider_id"].name.value;
       if (!provider_name) {
         numbers++;
@@ -98,12 +170,13 @@ class WrappedEmitter {
         );
 
       eventsEmitter.emit("agreement_created", {
-        workerName: provider_name,
+        providerName: provider_name,
         taskId: this.TaskId,
       });
 
       this.agreement_provider_name[event["agr_id"]] = provider_name;
     } else if (eventName === events.AgreementConfirmed.name) {
+      if (this.Active === false) return;
       let provider_name = this.agreement_provider_name[event["agr_id"]];
 
       false &&
@@ -112,17 +185,18 @@ class WrappedEmitter {
         );
 
       eventsEmitter.emit("agreement_confirmed", {
-        workerName: provider_name,
+        providerName: provider_name,
         taskId: this.TaskId,
       });
 
       this.agreement_provider_name[event["agr_id"]] = provider_name;
     } else if (eventName === events.ComputationFinished.name) {
+      console.log("f1");
       var hrend = process.hrtime(this.start_time);
-
+      console.log("f2");
       const timeInMs = (hrend[0] * 1000000000 + hrend[1]) / 1000000;
-
-      false &&
+      console.log("f3");
+      true &&
         console.log(
           `****************************** TASK ${this.TaskId} / total calculation time of  is ${timeInMs}'`
         );
@@ -130,6 +204,7 @@ class WrappedEmitter {
         time: timeInMs,
         taskId: this.TaskId,
       });
+      console.log("f5");
     }
   };
 }

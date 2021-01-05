@@ -6,6 +6,8 @@ class ChessSocketServer {
   users = [];
 
   lastPosition = "start";
+  lastMoveData = {};
+  lastMoves = {};
 
   getUserBySocketId = (socketId) => {
     return this.users.find((user) => user.id === socketId);
@@ -21,7 +23,7 @@ class ChessSocketServer {
     this.users.push(user);
     return { user };
   };
-  usersCount = () => uthis.sers.length;
+  usersCount = () => this.users.length;
   removeUser = (id) => {
     const userIndex = this.users.findIndex((user) => user.id === id);
     if (userIndex !== -1) {
@@ -51,32 +53,63 @@ class ChessSocketServer {
     });
   }
 
-  workerFailed = (worker) => {
-    console.log(">>>>>>>>>>>> sending worker failed ... " + worker);
-    this.io.to("chess").emit("workerFailed", worker);
+  currentTurn = (turnData) => {
+    this.lastMoveData = turnData;
+    // console.log(">>>>>>>>>>>> sending current turn data ... " + turnData);
+    this.io.to("chess").emit("currentTurnEvent", turnData);
+  };
+
+  providerFailed = (provider) => {
+    // console.log(">>>>>>>>>>>> sending provider failed ... " + provider);
+    this.io.to("chess").emit("providerFailed", provider);
+  };
+
+  computationStarted = (taskId) => {
+    //console.log(">>>>>>>>>>>> sending computation started ... " + taskId);
+    this.io.to("chess").emit("computationStarted", taskId);
+  };
+  sendMovesList = (moves) => {
+    //console.log(">>>>>>>>>>>> sending computation started ... " + taskId);
+    this.io.to("chess").emit("movesRefreshed", moves);
+    this.lastMoves = moves;
+  };
+
+  offersReceived = (data) => {
+    console.log(
+      ">>>>>>>>>>>> taskId: " +
+        data.taskId +
+        "sending offers received  " +
+        data.offersCount
+    );
+    //true && console.log(JSON.stringify(data, null, 4));
+    this.io.to("chess").emit("offersReceived", data);
   };
 
   agreementCreated = (agreement) => {
-    console.log(">>>>>>>>>>>> sending agreement created ... " + agreement);
+    // console.log(">>>>>>>>>>>> sending agreement created ... " + agreement);
     this.io.to("chess").emit("agreementCreated", agreement);
   };
   agreementConfirmed = (agreement) => {
-    console.log(">>>>>>>>>>>> sending agreement confirmed ... " + agreement);
+    // console.log(">>>>>>>>>>>> sending agreement confirmed ... " + agreement);
     this.io.to("chess").emit("agreementConfirmed", agreement);
   };
   computationFinished = (computation) => {
     console.log(">>>>>>>>>>>> sending computation finished ... " + computation);
     this.io.to("chess").emit("computationFinished", computation);
   };
+  invoiceReceived = (invoice) => {
+    // console.log(">>>>>>>>>>>> sending computation finished ... " + computation);
+    this.io.to("chess").emit("invoiceReceived", invoice);
+  };
 
   sendChessMove = (move) => {
-    console.log(">>>>>>>>>>>> sending move... " + move);
+    // console.log(">>>>>>>>>>>> sending move... " + move);
     this.io.to("chess").emit("moveEvent", move);
   };
 
   sendChessPosition = (fen) => {
     this.lastPosition = fen;
-    console.log(">>>>>>>>>>>> sending position... " + fen);
+    // console.log(">>>>>>>>>>>> sending position... " + fen);
     this.io.to("chess").emit("positionEvent", { fen });
   };
   handleAdminEventMessage = (socket, message, callback) => {
@@ -107,6 +140,8 @@ class ChessSocketServer {
     console.log("user added", user);
     socket.join("chess");
     this.io.to("chess").emit("positionEvent", { fen: this.lastPosition });
+    this.io.to("chess").emit("currentTurnEvent", this.lastMoveData);
+    this.io.to("chess").emit("movesRefreshed", this.lastMoves);
     if (callback) callback("chess"); // obj: successfuly joined ?
   };
 

@@ -25,7 +25,7 @@ LogMoveData = (data) =>
   `[turnID]: ${data.turnId}, [gameId]: ${data.gameId}, [gameStep]: ${data.gameStep}`;
 
 async function PerformGolemCalculations(moveData, subnetTag) {
-  const { turnId, gameId, gameStep, chess } = moveData;
+  const { turnId, gameId, gameStep, chess, depth, taskId } = moveData;
   var completed = false;
 
   events.emit("calculation_requested", { gameId, gameStep });
@@ -51,11 +51,10 @@ async function PerformGolemCalculations(moveData, subnetTag) {
 
   // save fen position to file
 
-  var depth = turnId == "w" ? 3 : 2;
   fs.writeFileSync(Paths.ChessBoardFilePath, chess.ascii());
   fs.writeFileSync(
     Paths.InputFilePath,
-    Paths.MoveHash + "\n" + depth + "\n" + "position fen " + chess.fen()
+    taskId + "\n" + depth + "\n" + "position fen " + chess.fen()
   );
 
   async function* worker(ctx, tasks) {
@@ -95,23 +94,19 @@ async function PerformGolemCalculations(moveData, subnetTag) {
   const Subtasks = range(0, 1, 1);
   const timeout = dayjs.duration({ minutes: 6 }).asMilliseconds();
 
-  var taskId = Paths.MoveHash;
-
   var emitter = new WrappedEmitter(taskId);
-
-  await asyncWith(
-    await new Engine(
-      _package,
-      1,
-      timeout, //5 min to 30 min
-      "0.02",
-      undefined,
-      subnetTag,
-      logUtils.logSummary(emitter.Process)
-      //LogChess
-    ),
-    async (engine) => {
-      /*  simpleTask = new Task(0);
+  var engine = await new Engine(
+    _package,
+    1,
+    timeout, //5 min to 30 min
+    "0.02",
+    undefined,
+    subnetTag,
+    new logUtils.logSummary(emitter.Process)
+    //LogChess
+  );
+  await asyncWith(engine, async (engine) => {
+    /*  simpleTask = new Task(0);
 
       for await (let result of engine.map(worker, [simpleTask])) {
         console.log("result ===>");
@@ -134,26 +129,27 @@ async function PerformGolemCalculations(moveData, subnetTag) {
       }
 */
 
-      for await (let subtask of engine.map(
-        worker,
-        Subtasks.map((frame) => new Task(frame))
-      )) {
-        var bestmove = ExtractBestMove(
-          fs.readFileSync(subtask.output(), "utf8")
-        );
-        console.log(
-          "*** result =====> ",
-          bestmove.move +
-            " time: " +
-            bestmove.time +
-            ", depth:" +
-            bestmove.depth
-        );
-        completed = true;
-        events.emit("calculation_completed", { gameId, gameStep, bestmove });
-      }
+    for await (let subtask of engine.map(
+      worker,
+      Subtasks.map((frame) => new Task(frame))
+    )) {
+      var bestmove = ExtractBestMove(fs.readFileSync(subtask.output(), "utf8"));
+      console.log(
+        "*** result =====> ",
+        bestmove.move + " time: " + bestmove.time + ", depth:" + bestmove.depth
+      );
+      completed = true;
+
+      setTimeout(() => {
+        emitter.Stop();
+        engine.done();
+      }, 30000);
+
+      events.emit("calculation_completed", { gameId, gameStep, bestmove });
     }
-  );
+  });
+  engine.done();
+  emitter.Stop();
   return completed;
 }
 

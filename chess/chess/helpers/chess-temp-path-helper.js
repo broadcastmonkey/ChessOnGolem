@@ -25,11 +25,11 @@ class ChessTempPathHelper {
       "log_" + this.DefaultFileName
     );
 
-    this.MoveHash =
+    /*this.MoveHash =
       "hash_" +
       gameId.toString().padStart(8, "0") +
       "_" +
-      step.toString().padStart(4, "0");
+      step.toString().padStart(4, "0");*/
   }
 }
 
