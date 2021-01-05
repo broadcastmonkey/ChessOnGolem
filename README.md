@@ -19,7 +19,16 @@ This particulat project is designed as a GUI to backend project running Golem Ne
 
 Node.js Server that can be run on linux or windows machines that is responsible for handling game and requesting Golem Network for next moves for each AI player.
 
-Is used also as backend server for GUI App ()
+Is used also as backend server for GUI App that displayes chess game in real time with some statistics regarding provider nodes work.
+(ChessOnGolemViewer => https://github.com/broadcastmonkey/ChessOnGolemViewer)
+
+#### Chess on Golem Viewer
+
+https://github.com/broadcastmonkey/ChessOnGolemViewer
+
+React application that serves as GUI for displaying chess game progress for Chess on Golem.
+
+It displays
 
 ### Used framewroks / libraries
 
