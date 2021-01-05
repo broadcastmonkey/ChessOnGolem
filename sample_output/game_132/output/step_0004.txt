@@ -1,0 +1,4 @@
+bestmove d8d5
+exec time:521.981375
+depth:1
+hash:hash_00000132_0004

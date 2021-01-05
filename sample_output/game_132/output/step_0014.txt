@@ -1,0 +1,4 @@
+bestmove e8d8
+exec time:309.058983
+depth:1
+hash:hash_00000132_0014

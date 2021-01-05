@@ -1,0 +1,4 @@
+bestmove d5c5
+exec time:470.617073
+depth:1
+hash:hash_00000132_0008

@@ -1,0 +1,4 @@
+bestmove f3e5 ponder e6b6
+exec time:4412.459239
+depth:17
+hash:hash_00000132_0011

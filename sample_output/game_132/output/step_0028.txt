@@ -1,0 +1,4 @@
+bestmove b8a7 ponder c1e3
+exec time:494.11491
+depth:1
+hash:hash_00000132_0028

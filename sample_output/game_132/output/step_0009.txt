@@ -1,0 +1,4 @@
+bestmove d2d4 ponder g8f6
+exec time:2625.874319
+depth:17
+hash:hash_00000132_0009

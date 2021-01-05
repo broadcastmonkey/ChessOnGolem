@@ -1,0 +1,4 @@
+bestmove a7a6
+exec time:322.501935
+depth:1
+hash:hash_00000132_0022

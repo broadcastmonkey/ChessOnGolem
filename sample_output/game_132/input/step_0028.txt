@@ -1,0 +1,3 @@
+hash_00000132_0028
+1
+position fen rkQ2bnr/Npp1pppp/p7/4P3/8/8/PPP2PPP/R1B1K2R b KQ - 0 14

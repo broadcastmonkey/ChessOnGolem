@@ -1,0 +1,34 @@
+calculating best move with depth: 20
+processed [xxx] hash_00000132_0003
+20
+position fen rnbqkbnr/ppp1pppp/8/3p4/4P3/8/PPPP1PPP/RNBQKBNR w KQkq d6 0 2
+msg: Stockfish 11 WASM by T. Romstad, M. Costalba, J. Kiiski, G. Linscott, D. Dugovic, F. Fichter, N. Fiekas, Chess.com, et al.
+msg: info depth 1 seldepth 1 multipv 1 score cp 89 nodes 47 nps 11750 time 4 pv d1f3 bmc 5
+msg: info depth 2 seldepth 2 multipv 1 score cp 54 nodes 166 nps 33200 time 5 pv d1e2 c7c6 e4d5 d8d5 bmc 4.585
+msg: info depth 3 seldepth 3 multipv 1 score cp 85 nodes 235 nps 33571 time 7 pv e4d5 d8d5 d1e2 bmc 3.37045
+msg: info depth 4 seldepth 4 multipv 1 score cp 115 nodes 412 nps 41200 time 10 pv e4d5 e7e5 b1c3 c7c6 bmc 1.74252
+msg: info depth 5 seldepth 5 multipv 1 score cp 119 nodes 602 nps 43000 time 14 pv e4d5 e7e6 d5e6 c8e6 b1c3 bmc 0.900883
+msg: info depth 6 seldepth 6 multipv 1 score cp 123 nodes 1717 nps 66038 time 26 pv e4d5 c7c6 g1f3 d8d5 d1e2 bmc 0.465756
+msg: info depth 7 seldepth 7 multipv 1 score cp 116 nodes 3366 nps 88578 time 38 pv e4d5 c7c6 g1f3 c6d5 d2d4 g8f6 b1c3 bmc 0.240796
+msg: info depth 8 seldepth 8 multipv 1 score cp 55 nodes 6156 nps 86704 time 71 pv e4d5 c7c6 g1f3 g8f6 d5c6 b8c6 d2d4 c8g4 bmc 0.124492
+msg: info depth 9 seldepth 13 multipv 1 score cp 69 nodes 9951 nps 102587 time 97 pv e4d5 c7c6 g1f3 c6d5 d2d4 b8c6 f1b5 a7a6 b5e2 bmc 0.0643621
+msg: info depth 10 seldepth 12 multipv 1 score cp 89 nodes 13113 nps 99340 time 132 pv e4d5 c7c6 g1f3 c6d5 d2d4 b8c6 f1b5 a7a6 bmc 0.0332752
+msg: info depth 11 seldepth 13 multipv 1 score cp 106 nodes 19650 nps 123584 time 159 pv e4d5 c7c6 g1f3 c6d5 f1b5 c8d7 b5d7 b8d7 d2d4 g8f6 b1c3 bmc 0.0172033
+msg: info depth 12 seldepth 14 multipv 1 score cp 141 nodes 47621 nps 131914 time 361 pv e4d5 c7c6 g1f3 c6d5 f1b5 b8d7 d2d4 a7a6 b5e2 g8f6 e1g1 bmc 0.0088941
+msg: info depth 13 seldepth 20 multipv 1 score cp 89 nodes 127573 nps 136005 time 938 pv e4d5 c7c6 d5c6 b8c6 b1c3 g8f6 g1f3 e7e5 d2d3 f8c5 f1e2 e8g8 e1g1 h7h6 c3e4 f6e4 d3e4 bmc 0.00459825
+msg: info depth 14 seldepth 20 multipv 1 score cp 125 nodes 160566 nps 157263 hashfull 80 time 1021 pv e4d5 c7c6 d5c6 b8c6 b1c3 g8f6 g1f3 e7e5 f1c4 c6a5 f3e5 a5c4 e5c4 bmc 0.0023773
+msg: info depth 15 seldepth 19 multipv 1 score cp 119 nodes 247879 nps 198939 hashfull 119 time 1246 pv e4d5 c7c6 d5c6 b8c6 b1c3 c8f5 g1f3 e7e6 h2h3 g8f6 d2d4 f8b4 a2a3 b4c3 b2c3 e8g8 c1f4 bmc 0.00122906
+msg: info depth 16 seldepth 23 multipv 1 score cp 136 nodes 380675 nps 239418 hashfull 193 time 1590 pv e4d5 c7c6 d5c6 b8c6 g1f3 g8f6 b1c3 e7e5 f1c4 c8g4 d2d3 f8d6 h2h3 g4f3 d1f3 e8g8 e1g1 c6d4 f3b7 bmc 0.000635425
+msg: info depth 17 seldepth 28 multipv 1 score cp 143 nodes 668884 nps 285847 hashfull 338 time 2340 pv e4d5 c7c6 d5c6 b8c6 g1f3 e7e5 b1c3 g8f6 f1c4 f8d6 d2d3 e8g8 e1g1 a7a6 c1e3 c8g4 h2h3 g4f3 d1f3 c6d4 e3d4 e5d4 c3e2 bmc 0.000328515
+msg: info depth 18 seldepth 27 multipv 1 score cp 134 upperbound nodes 939037 nps 309097 hashfull 449 time 3038 pv e4d5 g8f6 bmc 0.000169842
+msg: info depth 18 seldepth 28 multipv 1 score cp 124 upperbound nodes 1103254 nps 319783 hashfull 507 time 3450 pv e4d5 g8f6 bmc 0.000169842
+msg: info depth 18 seldepth 28 multipv 1 score cp 110 upperbound nodes 1409336 nps 333412 hashfull 604 time 4227 pv e4d5 g8f6 bmc 0.000169842
+msg: info depth 18 seldepth 28 multipv 1 score cp 122 lowerbound nodes 1541406 nps 337361 hashfull 646 time 4569 pv e4d5 bmc 0.000169842
+msg: info depth 18 seldepth 28 multipv 1 score cp 112 nodes 1622785 nps 340349 hashfull 664 time 4768 pv e4d5 g8f6 d2d4 f6d5 c2c4 d5f6 g1f3 e7e6 b1c3 f8b4 f1e2 e8g8 e1g1 c7c5 c1g5 b8c6 g5f6 d8f6 c3e4 f6f4 e4c5 b4c5 bmc 0.000169842
+msg: info depth 19 seldepth 30 multipv 1 score cp 108 nodes 2219511 nps 352191 hashfull 822 time 6302 pv e4d5 g8f6 d2d4 f6d5 c2c4 d5f6 g1f3 e7e6 f1e2 c7c5 b1c3 c5d4 d1d4 d8d4 f3d4 a7a6 e1g1 f8e7 c1f4 b8d7 a1d1 h7h6 f4c7 e8g8 g1h1 b7b6 bmc 8.78084e-05
+msg: info depth 20 seldepth 31 multipv 1 score cp 104 nodes 2816908 nps 359988 hashfull 902 time 7825 pv e4d5 g8f6 g1f3 f6d5 d2d4 e7e6 f1e2 c7c5 e1g1 b8c6 d4c5 f8c5 c2c4 d5f6 d1d8 c6d8 b1c3 e8g8 a2a3 b7b6 b2b4 c5e7 f1d1 c8b7 bmc 4.53969e-05
+msg: bestmove e4d5 ponder g8f6
+writing bestmove e4d5 ponder g8f6
+exec time:8672.225822
+depth:20
+hash:hash_00000132_0003 to output.txt

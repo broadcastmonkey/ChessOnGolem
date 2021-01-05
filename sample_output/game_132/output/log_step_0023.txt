@@ -1,0 +1,27 @@
+calculating best move with depth: 17
+processed [xxx] hash_00000132_0023
+17
+position fen r1k2bnr/1pp1pppp/p3b3/1N2P3/3Q4/8/PPP2PPP/R1B1K2R w KQ - 0 12
+msg: Stockfish 11 WASM by T. Romstad, M. Costalba, J. Kiiski, G. Linscott, D. Dugovic, F. Fichter, N. Fiekas, Chess.com, et al.
+msg: info depth 1 seldepth 1 multipv 1 score cp 834 nodes 92 nps 30666 time 3 pv b5c3 bmc 4
+msg: info depth 2 seldepth 2 multipv 1 score cp 838 nodes 190 nps 38000 time 5 pv b5c3 a6a5 bmc 2.068
+msg: info depth 3 seldepth 5 multipv 1 score cp 882 nodes 285 nps 40714 time 7 pv b5a7 c8b8 d4d8 b8a7 d8c7 bmc 2.06916
+msg: info depth 4 seldepth 6 multipv 1 score cp 1062 nodes 390 nps 48750 time 8 pv b5a7 c8b8 d4d8 b8a7 d8c7 a6a5 c1e3 a7a6 bmc 1.06975
+msg: info depth 5 seldepth 8 multipv 1 score cp 1321 nodes 581 nps 58100 time 10 pv b5a7 c8b8 d4d8 e6c8 a7c8 bmc 0.553063
+msg: info depth 6 seldepth 8 multipv 1 score cp 1143 nodes 1039 nps 86583 time 12 pv b5a7 a8a7 d4a7 g8h6 a7a8 c8d7 c1h6 g7h6 bmc 0.285933
+msg: info depth 7 seldepth 9 multipv 1 score cp 1143 nodes 1386 nps 99000 time 14 pv b5a7 a8a7 d4a7 g8h6 a7a8 c8d7 c1h6 g7h6 a8b7 bmc 0.147828
+msg: info depth 8 seldepth 13 multipv 1 score cp 1158 nodes 1927 nps 48175 time 40 pv b5a7 a8a7 d4a7 g8h6 a7a8 c8d7 c1h6 g7h6 a8b7 bmc 0.0764268
+msg: info depth 9 seldepth 14 multipv 1 score cp 1213 nodes 2453 nps 58404 time 42 pv b5a7 a8a7 d4a7 g8h6 a7a8 c8d7 c1h6 g7h6 bmc 0.0395127
+msg: info depth 10 seldepth 12 multipv 1 score cp 1250 nodes 3375 nps 76704 time 44 pv b5a7 a8a7 d4a7 g8h6 a7a8 c8d7 c1h6 g7h6 a8b7 bmc 0.0204281
+msg: info depth 11 seldepth 14 multipv 1 score cp 1314 nodes 11814 nps 218777 time 54 pv b5a7 a8a7 d4a7 c8d8 a7b7 f7f6 c1g5 f6g5 b7a8 e6c8 e1c1 d8e8 a8c8 e8f7 c8c7 bmc 0.0105613
+msg: info depth 12 seldepth 17 multipv 1 score cp 1350 nodes 16783 nps 182423 time 92 pv b5a7 a8a7 d4a7 c8d8 a7b7 f7f5 b7a6 e6c8 a6a8 bmc 0.00546019
+msg: info depth 13 seldepth 16 multipv 1 score cp 1500 nodes 22824 nps 217371 time 105 pv b5a7 a8a7 d4a7 g7g6 a7a8 c8d7 a8f8 f7f6 e5f6 e7f6 bmc 0.00282292
+msg: info depth 14 seldepth 22 multipv 1 score cp 1555 nodes 149037 nps 446218 time 334 pv b5a7 a8a7 d4a7 g8f6 e5f6 e7f6 a7a8 c8d7 a8b7 a6a5 b7b5 c7c6 b5b7 d7d6 e1g1 e6d5 b7a8 d6d7 a8a5 bmc 0.00145945
+msg: info depth 15 seldepth 26 multipv 1 score cp 1574 nodes 230327 nps 545798 time 422 pv b5a7 a8a7 d4a7 g8f6 e5f6 e7f6 e1g1 c8d7 a7b7 f8d6 b7a6 d7e7 a6a4 h8e8 c1f4 e7f8 f4d6 c7d6 bmc 0.000754536
+msg: info depth 16 seldepth 24 multipv 1 score cp 1600 nodes 309324 nps 649840 time 476 pv b5a7 a8a7 d4a7 c8d7 a7b7 f7f5 b7a8 g8f6 e5f6 e7f6 e1g1 h8g8 c1f4 f8d6 a8a6 g8b8 f4d6 bmc 0.000390095
+msg: info depth 17 seldepth 26 multipv 1 score cp 1643 nodes 540527 nps 857979 time 630 pv b5a7 a8a7 d4a7 c8d7 a7b7 f7f5 b7a8 g8f6 e5f6 e7f6 e1g1 h8g8 a8a6 f8d6 f1e1 d6e5 a6a4 d7e7 c1f4 g8b8 f4e5 f6e5 a4h4 e7f7 h4h7 b8b2 bmc 0.000201679
+msg: bestmove b5a7 ponder a8a7
+writing bestmove b5a7 ponder a8a7
+exec time:975.014023
+depth:17
+hash:hash_00000132_0023 to output.txt

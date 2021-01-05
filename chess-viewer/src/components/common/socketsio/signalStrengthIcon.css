@@ -1,0 +1,16 @@
+div.signal-circle {
+  background-color: black;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  margin: auto;
+  float: none;
+  display: flex;
+}
+div.signal-red {
+  background-color: red;
+}
+div.signal-green {
+  background-color: green;
+}

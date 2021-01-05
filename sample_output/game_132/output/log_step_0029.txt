@@ -1,0 +1,27 @@
+calculating best move with depth: 17
+processed [xxx] hash_00000132_0029
+17
+position fen r1Q2bnr/kpp1pppp/p7/4P3/8/8/PPP2PPP/R1B1K2R w KQ - 0 15
+msg: Stockfish 11 WASM by T. Romstad, M. Costalba, J. Kiiski, G. Linscott, D. Dugovic, F. Fichter, N. Fiekas, Chess.com, et al.
+msg: info depth 1 seldepth 2 multipv 1 score cp 994 nodes 59 nps 9833 time 6 pv c1e3 c7c5 c8c5 a7b8 bmc 2
+msg: info depth 2 seldepth 4 multipv 1 score mate 3 nodes 116 nps 14500 time 8 pv c1e3 c7c5 e3c5 b7b6 bmc 1.034
+msg: info depth 3 seldepth 6 multipv 1 score mate 3 nodes 163 nps 16300 time 10 pv c1e3 c7c5 e3c5 b7b6 c8c7 bmc 0.534578
+msg: info depth 4 seldepth 6 multipv 1 score mate 3 nodes 212 nps 17666 time 12 pv c1e3 c7c5 e3c5 b7b6 c8c7 bmc 0.276377
+msg: info depth 5 seldepth 6 multipv 1 score mate 3 nodes 263 nps 20230 time 13 pv c1e3 c7c5 e3c5 b7b6 c8c7 bmc 0.142887
+msg: info depth 6 seldepth 6 multipv 1 score mate 3 nodes 316 nps 21066 time 15 pv c1e3 c7c5 e3c5 b7b6 c8c7 bmc 0.0738725
+msg: info depth 7 seldepth 6 multipv 1 score mate 3 nodes 371 nps 21823 time 17 pv c1e3 c7c5 e3c5 b7b6 c8c7 bmc 0.0381921
+msg: info depth 8 seldepth 6 multipv 1 score mate 3 nodes 470 nps 24736 time 19 pv c1e3 c7c5 e3c5 b7b6 c8c7 bmc 0.0197453
+msg: info depth 9 seldepth 6 multipv 1 score mate 3 nodes 596 nps 28380 time 21 pv c1e3 c7c5 e3c5 b7b6 c8c7 bmc 0.0102083
+msg: info depth 10 seldepth 6 multipv 1 score mate 3 nodes 726 nps 31565 time 23 pv c1e3 c7c5 e3c5 b7b6 c8c7 bmc 0.0052777
+msg: info depth 11 seldepth 6 multipv 1 score mate 3 nodes 887 nps 35480 time 25 pv c1e3 c7c5 e3c5 b7b6 c8c7 bmc 0.00272857
+msg: info depth 12 seldepth 6 multipv 1 score mate 3 nodes 1052 nps 38962 time 27 pv c1e3 c7c5 e3c5 b7b6 c8c7 bmc 0.00141067
+msg: info depth 13 seldepth 6 multipv 1 score mate 3 nodes 1288 nps 44413 time 29 pv c1e3 c7c5 e3c5 b7b6 c8c7 bmc 0.000729317
+msg: info depth 14 seldepth 6 multipv 1 score mate 3 nodes 1633 nps 52677 time 31 pv c1e3 c7c5 e3c5 b7b6 c8c7 bmc 0.000377057
+msg: info depth 15 seldepth 6 multipv 1 score mate 3 nodes 1926 nps 56647 time 34 pv c1e3 c7c5 e3c5 b7b6 c8c7 bmc 0.000194938
+msg: info depth 16 seldepth 6 multipv 1 score mate 3 nodes 2257 nps 62694 time 36 pv c1e3 c7c5 e3c5 b7b6 c8c7 bmc 0.000100783
+msg: info depth 17 seldepth 6 multipv 1 score mate 3 nodes 2618 nps 67128 time 39 pv c1e3 c7c5 e3c5 b7b6 c8c7 bmc 5.21049e-05
+msg: bestmove c1e3 ponder c7c5
+writing bestmove c1e3 ponder c7c5
+exec time:533.882506
+depth:17
+hash:hash_00000132_0029 to output.txt

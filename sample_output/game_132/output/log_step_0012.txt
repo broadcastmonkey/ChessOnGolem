@@ -1,0 +1,11 @@
+calculating best move with depth: 1
+processed [xxx] hash_00000132_0012
+1
+position fen rnb1kbnr/ppp1pppp/4q3/4N3/3P4/2N5/PPP2PPP/R1BQKB1R b KQkq - 2 6
+msg: Stockfish 11 WASM by T. Romstad, M. Costalba, J. Kiiski, G. Linscott, D. Dugovic, F. Fichter, N. Fiekas, Chess.com, et al.
+msg: info depth 1 seldepth 1 multipv 1 score cp -60 nodes 36 nps 12000 time 3 pv b8c6 bmc 2
+msg: bestmove b8c6
+writing bestmove b8c6
+exec time:335.15616
+depth:1
+hash:hash_00000132_0012 to output.txt

@@ -1,0 +1,27 @@
+calculating best move with depth: 17
+processed [xxx] hash_00000132_0033
+17
+position fen r1Q2bnr/k3pppp/pp6/2B1P3/8/8/PPP2PPP/R3K2R w KQ - 0 17
+msg: Stockfish 11 WASM by T. Romstad, M. Costalba, J. Kiiski, G. Linscott, D. Dugovic, F. Fichter, N. Fiekas, Chess.com, et al.
+msg: info depth 1 seldepth 2 multipv 1 score mate 1 nodes 97 nps 7461 time 13 pv c8c7 bmc 10
+msg: info depth 2 seldepth 2 multipv 1 score mate 1 nodes 142 nps 8352 time 17 pv c8c7 bmc 5.17
+msg: info depth 3 seldepth 2 multipv 1 score mate 1 nodes 187 nps 9350 time 20 pv c8c7 bmc 2.67289
+msg: info depth 4 seldepth 2 multipv 1 score mate 1 nodes 232 nps 10086 time 23 pv c8c7 bmc 1.38188
+msg: info depth 5 seldepth 2 multipv 1 score mate 1 nodes 277 nps 11080 time 25 pv c8c7 bmc 0.714434
+msg: info depth 6 seldepth 2 multipv 1 score mate 1 nodes 322 nps 11500 time 28 pv c8c7 bmc 0.369362
+msg: info depth 7 seldepth 2 multipv 1 score mate 1 nodes 367 nps 11838 time 31 pv c8c7 bmc 0.19096
+msg: info depth 8 seldepth 2 multipv 1 score mate 1 nodes 412 nps 12875 time 32 pv c8c7 bmc 0.0987265
+msg: info depth 9 seldepth 2 multipv 1 score mate 1 nodes 457 nps 6623 time 69 pv c8c7 bmc 0.0510416
+msg: info depth 10 seldepth 2 multipv 1 score mate 1 nodes 502 nps 7070 time 71 pv c8c7 bmc 0.0263885
+msg: info depth 11 seldepth 2 multipv 1 score mate 1 nodes 547 nps 7391 time 74 pv c8c7 bmc 0.0136429
+msg: info depth 12 seldepth 2 multipv 1 score mate 1 nodes 592 nps 7893 time 75 pv c8c7 bmc 0.00705336
+msg: info depth 13 seldepth 2 multipv 1 score mate 1 nodes 637 nps 8166 time 78 pv c8c7 bmc 0.00364659
+msg: info depth 14 seldepth 2 multipv 1 score mate 1 nodes 682 nps 8419 time 81 pv c8c7 bmc 0.00188529
+msg: info depth 15 seldepth 2 multipv 1 score mate 1 nodes 727 nps 8759 time 83 pv c8c7 bmc 0.000974692
+msg: info depth 16 seldepth 2 multipv 1 score mate 1 nodes 772 nps 8976 time 86 pv c8c7 bmc 0.000503916
+msg: info depth 17 seldepth 2 multipv 1 score mate 1 nodes 817 nps 9179 time 89 pv c8c7 bmc 0.000260525
+msg: bestmove c8c7
+writing bestmove c8c7
+exec time:1137.893676
+depth:17
+hash:hash_00000132_0033 to output.txt
