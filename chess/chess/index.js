@@ -56,7 +56,7 @@ var ListenerCalculationCompleted = async function ListenerCalculationCompleted(
   console.log(
     "calculation_completed executed. " + JSON.stringify(data, null, 4)
   );
-
+  if (Moves[data.bestmove.hash].move !== undefined) return;
   chess.move(data.bestmove.move, { sloppy: true });
 
   Moves[data.bestmove.hash].move = data.bestmove.move;
