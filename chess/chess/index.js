@@ -32,7 +32,7 @@ RefreshMoves = () => {
 };
 
 PerformGolemCalculationsWrapper = async function (moveData) {
-  moveData.depth = moveData.turnId == "w" ? 22 : 5;
+  moveData.depth = moveData.turnId == "w" ? 17 : 5;
   moveData.taskId =
     "hash_" +
     moveData.gameId.toString().padStart(8, "0") +
