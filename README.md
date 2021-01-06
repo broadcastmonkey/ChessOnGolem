@@ -55,7 +55,7 @@ If It's not running you can request start at pawel.burgchardt [ A-T] gmail.com
 - node 12
 - yagna daemon
 - run yarn install / yarn js:chess in chess folder
-- run npm install / npm start in chess-front folder
+- run npm install / npm start in chess-viewer folder
 - enjoy chess game played by two golem AIs at http://localhost:3000/
 
 ## Potential growth
