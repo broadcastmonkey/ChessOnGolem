@@ -37,32 +37,32 @@ This can be changed in chess/index.js on line 32:
 
 moveData.depth = moveData.turnId == "w" ? 20 : 1;
 
-Typical calculation times:
-Depth  
- < 10 => < 1s
-~ 20 => ~ 3s
-~ 30 => ~ 157s
+Typical calculation times:\
+Depth \
+ < 10 => < 1s\
+~ 20 => ~ 3s\
+~ 30 => ~ 157s\
 
 Example of a file with task description that is sent to Golem Providers:
 
 //--------
-hash_00000132_0003
-20
-position fen rnbqkbnr/ppp1pppp/8/3p4/4P3/8/PPPP1PPP/RNBQKBNR w KQkq d6 0 2
+hash_00000132_0003\
+20\
+position fen rnbqkbnr/ppp1pppp/8/3p4/4P3/8/PPPP1PPP/RNBQKBNR w KQkq d6 0 2\
 //--------
 
-Line 1 : id of an operation used to distinguish different tasks by chess server.
-Line 2 : contains depth that stockfish.js algorithm needs to consider.
-Line 3: describes current chess game state in fen notation.
+Line 1 : id of an operation used to distinguish different tasks by chess server.\
+Line 2 : contains depth that stockfish.js algorithm needs to consider.\
+Line 3: describes current chess game state in fen notation.\
 
 Correct output should look similar to this file:
 
-//--------
-bestmove e4d5 ponder g8f6
-exec time:8672.225822
-depth:20
-hash:hash_00000132_0003
-//--------
+//--------\
+bestmove e4d5 ponder g8f6\
+exec time:8672.225822\
+depth:20\
+hash:hash_00000132_0003\
+//--------\
 
 With lines describing suggested move, calculation time[ms], depth of calculations and operation id.
 
@@ -72,9 +72,9 @@ Demo of Node Chess app currently runs at http:// 20.52.154.16/3970 on Linux Ubun
 
 To run Node Chess app please do the following:
 
-cd chess
-yarn install
-yarn js:chess
+cd chess\
+yarn install\
+yarn js:chess\
 
 Script runs until game is finished, when some calculation fails or timeouts golem network is being asked to perform it again.
 
