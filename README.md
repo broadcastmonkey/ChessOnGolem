@@ -73,3 +73,11 @@ If It's not running you can request start at pawel.burgchardt [ A-T] gmail.com
 - Chessboard.jsx / under MIT license
 - Socket.io / under MIT license
 - stockfish.js / under GNU General Public License
+
+# License
+
+Project is licensed under GPLv3 license.
+
+# Author
+
+Paweł Burgchardt
