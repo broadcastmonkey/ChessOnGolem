@@ -5,14 +5,11 @@
 This project was created as an entry to Golem Hackathon 12/2020.
 
 It's purpose is to show that any state based game / problem can be run in Golem Network and solved interactively by provider nodes.
+This particular example shows classical chess game played by two AI players that facilitate golem network for computing.
 
-This particular example shows classical chessgame played by two AI players that facilitate golem network for computing.
-Whole game is managed by Node.js server which distributes computing tasks across Golem Network providers.
-Each move request is put into Golem Market and calculated by provider that puts best offer.
-To show how computing power could affect outcome of the game each player is allowed to calculate next move with particular depth. (With enough provider nodes in network that could be achieved without forcing one of players to ask for computations with lower depth than opponent)
+Whole game is managed by Node.js server which distributes chess computing tasks across Golem Network providers.
 
-Game outcome can be changed by editing depth thath each player considers while making move by editing chess/index.js on line 32:
-moveData.depth = moveData.turnId == "w" ? 20 : 1;
+Each move request is put into Golem Market and calculated by provider that puts best offer. To show how computing power could affect outcome of the game each player is allowed to calculate next move with particular depth. (With enough provider nodes in network that could be achieved without forcing one of players to ask for computations with lower depth than opponent)
 
 ### DEMO's
 
@@ -32,17 +29,74 @@ http://developed.home.pl/chessongolem.pdf
 
 #### Node Chess App
 
-Node.js Server that can be run on linux or windows machines that is responsible for handling game and requesting Golem Network for next moves for each AI player.
+Node.js Server (can be run on linux or windows machines) that is responsible for handling chess game and requesting Golem Network for aid with calculating next moves for each AI player. Moves are calculated on Node alpine docker image transformed to .gvim with a help of a stockfish.js chess engine.
 
-Is used also as backend server for GUI App that displayes chess game in real time with some statistics regarding provider nodes work.
-(ChessOnGolemViewer => https://github.com/broadcastmonkey/ChessOnGolemViewer)
+Node chess app creates a request to golem network for each move that is being performed by AI players. For demo purposes one player asks for best move with depth precision of 20 and the other one uses depth of 1.
 
-(also in this repository)
+This can be changed in chess/index.js on line 32:
+
+moveData.depth = moveData.turnId == "w" ? 20 : 1;
+
+Typical calculation times:
+Depth  
+ < 10 => < 1s
+~ 20 => ~ 3s
+~ 30 => ~ 157s
+
+Example of a file with task description that is sent to Golem Providers:
+
+//--------
+hash_00000132_0003
+20
+position fen rnbqkbnr/ppp1pppp/8/3p4/4P3/8/PPPP1PPP/RNBQKBNR w KQkq d6 0 2
+//--------
+
+Line 1 : id of an operation used to distinguish different tasks by chess server.
+Line 2 : contains depth that stockfish.js algorithm needs to consider.
+Line 3: describes current chess game state in fen notation.
+
+Correct output should look similar to this file:
+
+//--------
+bestmove e4d5 ponder g8f6
+exec time:8672.225822
+depth:20
+hash:hash_00000132_0003
+//--------
+
+With lines describing suggested move, calculation time[ms], depth of calculations and operation id.
+
+Node Chess app is also used as backend server for GUI App that displays chess game in real time with some statistics regarding provider nodes work.
+
+Demo of Node Chess app currently runs at http:// 20.52.154.16/3970 on Linux Ubuntu VM in MS Azure cloud.
+
+To run Node Chess app please do the following:
+
+cd chess
+yarn install
+yarn js:chess
+
+Script runs until game is finished, when some calculation fails or timeouts golem network is being asked to perform it again.
+
+Multiple clients can connect to socket.io websocket server and listen for events that describe current game state
+
+Events:
+• currentTurnEvent
+• providerFailed
+• computationStarted
+• movesRefreshed
+• gameFinished
+• offersReceived
+• agreementCreated
+• agreementConfirmed
+• computationFinished
+• invoiceReceived
+• moveEvent
+• positionEvent
+
+When client reconnects server sends him automatically current state of the game.
 
 #### Chess on Golem Viewer
-
-https://github.com/broadcastmonkey/ChessOnGolemViewer
-(also in this repository)
 
 React application that serves as GUI for displaying chess game progress for Chess on Golem.
 
@@ -51,7 +105,25 @@ It displays game progress and some interesting stats regarding provider nodes th
 There is live demo available at:
 http://chess-on-golem-viewer.herokuapp.com/
 
-If It's not running you can request start at pawel.burgchardt [ A-T] gmail.com
+If It's not currently running you can request start at pawel.burgchardt [ A-T] gmail.com
+
+You can run it locally by going to chess-viewer folder and executing
+
+npm install
+npm start
+
+You can then open the browser and see the result at http://localhost:3000/
+
+Chess on Golem Viewer connects automatically to node chess app server on 127.0.0.1:3970
+
+To change it please update .env.development file
+
+////////////////////////
+REACT_APP_NAME=Chess on Golem 1
+REACT_APP_VERSION=0.0.1
+REACT_APP_SOCKET_SERVER_URL=http://127.0.0.1:3970/
+REACT_APP_API_URL=http://127.0.0.1:3970/api
+///////////////////////
 
 ## SET UP
 
