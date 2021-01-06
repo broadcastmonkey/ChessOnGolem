@@ -81,18 +81,18 @@ Script runs until game is finished, when some calculation fails or timeouts gole
 Multiple clients can connect to socket.io websocket server and listen for events that describe current game state
 
 Events:
-• currentTurnEvent
-• providerFailed
-• computationStarted
-• movesRefreshed
-• gameFinished
-• offersReceived
-• agreementCreated
-• agreementConfirmed
-• computationFinished
-• invoiceReceived
-• moveEvent
-• positionEvent
+• currentTurnEvent\
+• providerFailed\
+• computationStarted\
+• movesRefreshed\
+• gameFinished\
+• offersReceived\
+• agreementCreated\
+• agreementConfirmed\
+• computationFinished\
+• invoiceReceived\
+• moveEvent\
+• positionEvent\
 
 When client reconnects server sends him automatically current state of the game.
 
@@ -109,7 +109,7 @@ If It's not currently running you can request start at pawel.burgchardt [ A-T] g
 
 You can run it locally by going to chess-viewer folder and executing
 
-npm install
+npm install\
 npm start
 
 You can then open the browser and see the result at http://localhost:3000/
@@ -118,12 +118,12 @@ Chess on Golem Viewer connects automatically to node chess app server on 127.0.0
 
 To change it please update .env.development file
 
-////////////////////////
-REACT_APP_NAME=Chess on Golem 1
-REACT_APP_VERSION=0.0.1
-REACT_APP_SOCKET_SERVER_URL=http://127.0.0.1:3970/
-REACT_APP_API_URL=http://127.0.0.1:3970/api
-///////////////////////
+//------\
+REACT_APP_NAME=Chess on Golem 1\
+REACT_APP_VERSION=0.0.1\
+REACT_APP_SOCKET_SERVER_URL=http://127.0.0.1:3970/\
+REACT_APP_API_URL=http://127.0.0.1:3970/api\
+//------
 
 ## SET UP
 
