@@ -5,11 +5,20 @@
 This project was created as an entry to Golem Hackathon 12/2020.
 
 It's purpose is to show that any state based game / problem can be run in Golem Network and solved interactively by provider nodes.
+
 This particular example shows classical chess game played by two AI players that facilitate golem network for computing.
 
 Whole game is managed by Node.js server which distributes chess computing tasks across Golem Network providers.
 
-Each move request is put into Golem Market and calculated by provider that puts best offer. To show how computing power could affect outcome of the game each player is allowed to calculate next move with particular depth. (With enough provider nodes in network that could be achieved without forcing one of players to ask for computations with lower depth than opponent)
+Each move request is sent to Golem Market and calculated by provider with best bid.
+
+The aim is to show how computing power may affect the outcome of the game.
+
+Right now the depth is fixed by allowing particular players to calculate moves with specific search depth. In youtube demos white player plays with depth of 17 / 20 and black player plays with depth of 1.
+
+In future with more providers in the Golem Network particular players may parallelize their calculations by using more or less providers to achieve better or worse moves in shorter time. It would also probably impact of final cost of game for each player.
+
+Hybrid strategies might be also used, e.g.: use more computing power at the beginning of the game and less computing power in the endgame.
 
 ### DEMO's
 
