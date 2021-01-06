@@ -41,11 +41,11 @@ Typical calculation times:\
 Depth \
  < 10 => < 1s\
 ~ 20 => ~ 3s\
-~ 30 => ~ 157s\
+~ 30 => ~ 157s
 
 Example of a file with task description that is sent to Golem Providers:
 
-//--------
+//--------\
 hash_00000132_0003\
 20\
 position fen rnbqkbnr/ppp1pppp/8/3p4/4P3/8/PPPP1PPP/RNBQKBNR w KQkq d6 0 2\
@@ -53,7 +53,7 @@ position fen rnbqkbnr/ppp1pppp/8/3p4/4P3/8/PPPP1PPP/RNBQKBNR w KQkq d6 0 2\
 
 Line 1 : id of an operation used to distinguish different tasks by chess server.\
 Line 2 : contains depth that stockfish.js algorithm needs to consider.\
-Line 3: describes current chess game state in fen notation.\
+Line 3: describes current chess game state in fen notation.
 
 Correct output should look similar to this file:
 
@@ -62,7 +62,7 @@ bestmove e4d5 ponder g8f6\
 exec time:8672.225822\
 depth:20\
 hash:hash_00000132_0003\
-//--------\
+//--------
 
 With lines describing suggested move, calculation time[ms], depth of calculations and operation id.
 
@@ -74,7 +74,7 @@ To run Node Chess app please do the following:
 
 cd chess\
 yarn install\
-yarn js:chess\
+yarn js:chess
 
 Script runs until game is finished, when some calculation fails or timeouts golem network is being asked to perform it again.
 
@@ -92,7 +92,7 @@ Events:
 • computationFinished\
 • invoiceReceived\
 • moveEvent\
-• positionEvent\
+• positionEvent
 
 When client reconnects server sends him automatically current state of the game.
 
@@ -121,8 +121,8 @@ To change it please update .env.development file
 //------\
 REACT_APP_NAME=Chess on Golem 1\
 REACT_APP_VERSION=0.0.1\
-REACT_APP_SOCKET_SERVER_URL=http://127.0.0.1:3970/\
-REACT_APP_API_URL=http://127.0.0.1:3970/api\
+REACT_APP_SOCKET_SERVER_URL=http://127.0.0.1:3970/ \
+REACT_APP_API_URL=http://127.0.0.1:3970/api \
 //------
 
 ## SET UP
