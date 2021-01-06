@@ -89,7 +89,7 @@ Script runs until game is finished, when some calculation fails or timeouts gole
 
 Multiple clients can connect to socket.io websocket server and listen for events that describe current game state
 
-Events:
+Events:\
 • currentTurnEvent\
 • providerFailed\
 • computationStarted\
