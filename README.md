@@ -11,6 +11,9 @@ Whole game is managed by Node.js server which distributes computing tasks across
 Each move request is put into Golem Market and calculated by provider that puts best offer.
 To show how computing power could affect outcome of the game each player is allowed to calculate next move with particular depth. (With enough provider nodes in network that could be achieved without forcing one of players to ask for computations with lower depth than opponent)
 
+Game outcome can be changed by editing depth thath each player considers while making move by editing chess/index.js on line 32:
+moveData.depth = moveData.turnId == "w" ? 20 : 1;
+
 ### DEMO's
 
 Demo v0.3
