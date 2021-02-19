@@ -24,7 +24,7 @@ var __importStar =
   };
 
 const events = __importStar(
-  require("../node_modules/yajsapi/dist/runner/events")
+  require("../node_modules/yajsapi/dist/executor/events")
 );
 
 class WrappedEmitter {
@@ -160,7 +160,7 @@ class WrappedEmitter {
       );
     } else if (eventName === events.AgreementCreated.name) {
       if (this.Active === false) return;
-      let provider_name = event["provider_id"].name.value;
+      let provider_name = event["provider_info"].name.value;
       if (!provider_name) {
         numbers++;
         provider_name = `provider-${numbers}`;

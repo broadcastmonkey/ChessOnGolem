@@ -15,7 +15,7 @@ const ChessServer = new ChessServerClass(app, server);
 const chess = new Chess();
 Moves = {};
 
-let subnet = "community.3";
+let subnet = "community.4";
 console.log(`Using subnet: ${subnet}`);
 console.log("starting pos: \n" + chess.ascii());
 
@@ -29,7 +29,7 @@ RefreshMoves = () => {
 };
 
 PerformGolemCalculationsWrapper = async function (moveData) {
-  moveData.depth = moveData.turnId == "w" ? 20 : 1;
+  moveData.depth = moveData.turnId == "w" ? 2 : 22;
   moveData.taskId = gethTaskIdHash(moveData.gameId, moveData.gameStep);
 
   ChessServer.currentTurn(moveData);

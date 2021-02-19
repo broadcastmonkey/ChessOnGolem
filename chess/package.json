@@ -15,7 +15,7 @@
         "express": "^4.17.1",
         "socketio": "^1.0.0",
         "ts-node": "^9.0.0",
-        "yajsapi": "^0.2.1"
+        "yajsapi": "^0.3.0"
     },
     "devDependencies": {
         "tsconfig-paths": "^3.9.0",

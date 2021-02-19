@@ -1,4 +1,4 @@
-bestmove e2e4 ponder e7e6
-exec time:1985.984599
-depth:17
+bestmove e2e4
+exec time:213.6631
+depth:1
 hash:hash22
