@@ -29,7 +29,7 @@ RefreshMoves = () => {
 };
 
 PerformGolemCalculationsWrapper = async function (moveData) {
-  moveData.depth = moveData.turnId == "w" ? 2 : 22;
+  moveData.depth = moveData.turnId == "w" ? 1 : 3;
   moveData.taskId = gethTaskIdHash(moveData.gameId, moveData.gameStep);
 
   ChessServer.currentTurn(moveData);
