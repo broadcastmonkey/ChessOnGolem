@@ -102,7 +102,7 @@ async function PerformGolemCalculations(moveData, subnetTag) {
       task_package: _package,
       max_workers: 1,
       timeout, //5 min to 30 min
-      budget: "10.02",
+      budget: "0.02",
       driver: "zksync",
       subnet_tag: subnetTag,
       network: "rinkeby",
