@@ -3,7 +3,7 @@
     "version": "0.1",
     "description": "Chess on Golem",
     "scripts": {
-        "js:chess": "node ./chess/index.js",
+        "start": "node ./chess/index.js",
         "clean": "rimraf node_modules/ yarn.lock || echo 'Project is already clean'"
     },
     "author": "Paweł Burgchardt <pawel.burgchardt@gmail.com>",
