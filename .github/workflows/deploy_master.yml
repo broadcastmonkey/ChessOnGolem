@@ -1,13 +1,12 @@
 # This is a basic workflow to help you get started with Actions
 
-name: DeployStagingServer
+name: DeployMasterServer
 
 # Controls when the action will run. 
 on:
   # Triggers the workflow on push or pull request events but only for the master branch
   push:
-    branches:
-      - staging
+    branches: [ master ]
  
   workflow_dispatch:
 
@@ -20,14 +19,13 @@ jobs:
       - name: Deploying to staging server
         uses: appleboy/ssh-action@master
         with:
-          host: ${{secrets.SSH_STAGING_HOST}}
+          host: ${{secrets.SSH_MASTER_HOST}}
           username: ${{secrets.SSH_USER}}
           key: ${{secrets.SSH_PRIVATE_KEY}}
           port: 22
           script: |
             cd ChessOnGolem
-            git pull origin staging
-            git checkout staging
+            git pull origin master
+            git checkout master
             yarn install
             pm2 reload all
-          
