@@ -17,15 +17,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Deploying to staging server
-      uses: appleboy/ssh-action@master
-      with:
-        host: ${{secrets.SSH_STAGING_HOST}}
-        username: ${{secrets.SSH_USER}}
-        key: ${{secrets.SSH_PRIVATE_KEY}}
-        port: 22
-        script: |
-          cd ChessOnGolem
-          git pull
-          yarn install
-          pm2 reload all
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{secrets.SSH_STAGING_HOST}}
+          username: ${{secrets.SSH_USER}}
+          key: ${{secrets.SSH_PRIVATE_KEY}}
+          port: 22
+          script: |
+            cd ChessOnGolem
+            git pull
+            yarn install
+            pm2 reload all
           
