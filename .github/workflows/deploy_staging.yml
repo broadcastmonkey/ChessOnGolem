@@ -26,7 +26,8 @@ jobs:
           port: 22
           script: |
             cd ChessOnGolem
-            git pull origin staging
+            git fetch --all
+            git reset --hard origin/staging
             git checkout staging
             yarn install
             pm2 reload all
