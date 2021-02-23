@@ -13,7 +13,7 @@ const app = express();
     dotfiles: "allow",
   }
 );*/
-const port = 443; // ===> config
+const port = 3970; // ===> config
 const server = app.listen(port, () =>
   console.log(`Listening on port ${port}...`)
 );
