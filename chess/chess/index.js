@@ -8,7 +8,7 @@ events.setMaxListeners(100);
 
 const app = express();
 app.use(express.static(__dirname, { dotfiles: "allow" }));
-const port = 80; // ===> config
+const port = 3970; // ===> config
 const server = app.listen(port, () =>
   console.log(`Listening on port ${port}...`)
 );
