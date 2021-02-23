@@ -2,7 +2,7 @@ const { PerformGolemCalculations } = require("./chess");
 const { Chess } = require("chess.js");
 const { gethTaskIdHash } = require("./helpers/get-task-hash-id");
 const express = require("express");
-const express = require("https");
+const https = require("https");
 const ChessServerClass = require("./sockets/sockets");
 const events = require("./event-emitter");
 events.setMaxListeners(100);
