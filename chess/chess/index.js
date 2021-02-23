@@ -21,10 +21,10 @@ const credentials = {
 const httpsServer = https.createServer(credentials, app);
 //app.use(express.static(__dirname, { dotfiles: "allow" }));
 const port = 3970; // ===> config
-
+/*
 const server = app.listen(port, () =>
   console.log(`Listening on port ${port}...`)
-);
+);*/
 
 httpsServer.listen(port, () => {
   console.log("HTTPS Server running on port 443");
