@@ -2,17 +2,42 @@ const { PerformGolemCalculations } = require("./chess");
 const { Chess } = require("chess.js");
 const { gethTaskIdHash } = require("./helpers/get-task-hash-id");
 const express = require("express");
+const express = require("https");
 const ChessServerClass = require("./sockets/sockets");
 const events = require("./event-emitter");
 events.setMaxListeners(100);
 
 const app = express();
-app.use(express.static(__dirname, { dotfiles: "allow" }));
+
+const privateKey = fs.readFileSync(
+  "/etc/letsencrypt/live/backend.chessongolem.app/privkey.pem",
+  "utf8"
+);
+const certificate = fs.readFileSync(
+  "/etc/letsencrypt/live/backend.chessongolem.app/cert.pem",
+  "utf8"
+);
+const ca = fs.readFileSync(
+  "/etc/letsencrypt/live/backend.chessongolem.app/chain.pem",
+  "utf8"
+);
+const credentials = {
+  key: privateKey,
+  cert: certificate,
+  ca: ca,
+};
+const httpsServer = https.createServer(credentials, app);
+//app.use(express.static(__dirname, { dotfiles: "allow" }));
 const port = 3970; // ===> config
+
 const server = app.listen(port, () =>
   console.log(`Listening on port ${port}...`)
 );
-const ChessServer = new ChessServerClass(app, server);
+
+httpsServer.listen(port, () => {
+  console.log("HTTPS Server running on port 443");
+});
+const ChessServer = new ChessServerClass(app, httpsServer);
 const chess = new Chess();
 Moves = {};
 
