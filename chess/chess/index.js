@@ -3,6 +3,7 @@ const { Chess } = require("chess.js");
 const { gethTaskIdHash } = require("./helpers/get-task-hash-id");
 const express = require("express");
 const https = require("https");
+const fs = require("fs");
 const ChessServerClass = require("./sockets/sockets");
 const events = require("./event-emitter");
 events.setMaxListeners(100);
