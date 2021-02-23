@@ -10,18 +10,9 @@ events.setMaxListeners(100);
 
 const app = express();
 
-const privateKey = fs.readFileSync(
-  "/etc/letsencrypt/live/backend.chessongolem.app/privkey.pem",
-  "utf8"
-);
-const certificate = fs.readFileSync(
-  "/etc/letsencrypt/live/backend.chessongolem.app/cert.pem",
-  "utf8"
-);
-const ca = fs.readFileSync(
-  "/etc/letsencrypt/live/backend.chessongolem.app/chain.pem",
-  "utf8"
-);
+const privateKey = fs.readFileSync("/home/pawelek/keys/privkey.pem", "utf8");
+const certificate = fs.readFileSync("/home/pawelek/keys/cert.pem", "utf8");
+const ca = fs.readFileSync("/home/pawelek/keys/chain.pem", "utf8");
 const credentials = {
   key: privateKey,
   cert: certificate,
