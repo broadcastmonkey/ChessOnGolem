@@ -2,17 +2,12 @@ const { PerformGolemCalculations } = require("./chess");
 const { Chess } = require("chess.js");
 const { gethTaskIdHash } = require("./helpers/get-task-hash-id");
 const express = require("express");
-var path = require("path");
 const ChessServerClass = require("./sockets/sockets");
 const events = require("./event-emitter");
 events.setMaxListeners(100);
 
 const app = express();
-/*app.use("/.well-known",
-  express.static(".well-known"), {
-    dotfiles: "allow",
-  }
-);*/
+app.use(express.static(__dirname, { dotfiles: "allow" }));
 const port = 3970; // ===> config
 const server = app.listen(port, () =>
   console.log(`Listening on port ${port}...`)
