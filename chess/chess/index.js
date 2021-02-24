@@ -10,14 +10,14 @@ events.setMaxListeners(100);
 
 const app = express();
 
-const privateKey = fs.readFileSync("/home/pawelek/keys/privkey.pem", "utf8");
+/*const privateKey = fs.readFileSync("/home/pawelek/keys/privkey.pem", "utf8");
 const certificate = fs.readFileSync("/home/pawelek/keys/cert.pem", "utf8");
 const ca = fs.readFileSync("/home/pawelek/keys/chain.pem", "utf8");
 const credentials = {
   key: privateKey,
   cert: certificate,
   ca: ca,
-};
+};*/
 //const httpsServer = https.createServer(credentials, app);
 //app.use(express.static(__dirname, { dotfiles: "allow" }));
 const port = 3970; // ===> config
