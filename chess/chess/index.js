@@ -21,15 +21,15 @@ const credentials = {
 const httpsServer = https.createServer(credentials, app);
 //app.use(express.static(__dirname, { dotfiles: "allow" }));
 const port = 3970; // ===> config
-/*
+
 const server = app.listen(port, () =>
   console.log(`Listening on port ${port}...`)
-);*/
-
+);
+/*
 httpsServer.listen(port, () => {
   console.log("HTTPS Server running on port 443");
-});
-const ChessServer = new ChessServerClass(app, httpsServer);
+});*/
+const ChessServer = new ChessServerClass(app, server);
 const chess = new Chess();
 Moves = {};
 
