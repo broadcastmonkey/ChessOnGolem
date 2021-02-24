@@ -19,7 +19,7 @@ const credentials = {
   ca: ca,
 };*/
 //const httpsServer = https.createServer(credentials, app);
-//app.use(express.static(__dirname, { dotfiles: "allow" }));
+app.use(express.static(__dirname, { dotfiles: "allow" }));
 const port = 3970; // ===> config
 
 const server = app.listen(port, () =>
