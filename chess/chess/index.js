@@ -1,39 +1,20 @@
+require("dotenv").config();
 const { PerformGolemCalculations } = require("./chess");
 const { Chess } = require("chess.js");
 const { gethTaskIdHash } = require("./helpers/get-task-hash-id");
-const express = require("express");
-const https = require("https");
-const fs = require("fs");
+const HttpServer = new (require("./sockets/http-server"))();
+
 const ChessServerClass = require("./sockets/sockets");
 const events = require("./event-emitter");
+
 events.setMaxListeners(100);
 
-const app = express();
-
-const privateKey = fs.readFileSync("/home/pawelek/keys/privkey.pem", "utf8");
-const certificate = fs.readFileSync("/home/pawelek/keys/cert.pem", "utf8");
-const ca = fs.readFileSync("/home/pawelek/keys/chain.pem", "utf8");
-const credentials = {
-  key: privateKey,
-  cert: certificate,
-  ca: ca,
-};
-const httpsServer = https.createServer(credentials, app);
-//app.use(express.static(__dirname, { dotfiles: "allow" }));
-const port = 3970; // ===> config
-/*
-const server = app.listen(port, () =>
-  console.log(`Listening on port ${port}...`)
-);*/
-
-httpsServer.listen(port, () => {
-  console.log("HTTPS Server running on port 443");
-});
-const ChessServer = new ChessServerClass(app, httpsServer);
+const ChessServer = new ChessServerClass(HttpServer.server);
 const chess = new Chess();
 Moves = {};
 
-let subnet = "community.4";
+let subnet = process.env.GOLEM_SUBNET;
+
 console.log(`Using subnet: ${subnet}`);
 console.log("starting pos: \n" + chess.ascii());
 
@@ -43,166 +24,145 @@ var globalTurn = "w";
 
 //sends move and statistics to clients
 RefreshMoves = () => {
-  ChessServer.sendMovesList(Moves);
+    ChessServer.sendMovesList(Moves);
 };
 
 PerformGolemCalculationsWrapper = async function (moveData) {
-  moveData.depth = moveData.turnId == "w" ? 3 : 6;
+    moveData.depth = moveData.turnId == "w" ? 3 : 6;
 
-  moveData.taskId = gethTaskIdHash(moveData.gameId, moveData.gameStep);
+    moveData.taskId = gethTaskIdHash(moveData.gameId, moveData.gameStep);
 
-  ChessServer.currentTurn(moveData);
+    ChessServer.currentTurn(moveData);
 
-  Moves[moveData.taskId] = {};
-  Moves[moveData.taskId].gameId = moveData.gameId;
-  Moves[moveData.taskId].nr = moveData.gameStep;
-  Moves[moveData.taskId].taskId = moveData.taskId;
-  Moves[moveData.taskId].depth = moveData.depth;
-  Moves[moveData.taskId].turn = moveData.turnId == "w" ? "white" : "black";
+    Moves[moveData.taskId] = {};
+    Moves[moveData.taskId].gameId = moveData.gameId;
+    Moves[moveData.taskId].nr = moveData.gameStep;
+    Moves[moveData.taskId].taskId = moveData.taskId;
+    Moves[moveData.taskId].depth = moveData.depth;
+    Moves[moveData.taskId].turn = moveData.turnId == "w" ? "white" : "black";
 
-  return await PerformGolemCalculations(moveData, subnet);
+    return await PerformGolemCalculations(moveData, subnet);
 };
 
-var ListenerCalculationCompleted = async function ListenerCalculationCompleted(
-  data
-) {
-  console.log(
-    "calculation_completed executed. " + JSON.stringify(data, null, 4)
-  );
-  if (Moves[data.bestmove.hash].move !== undefined) return;
-  chess.move(data.bestmove.move, { sloppy: true });
+var ListenerCalculationCompleted = async function ListenerCalculationCompleted(data) {
+    console.log("calculation_completed executed. " + JSON.stringify(data, null, 4));
+    if (Moves[data.bestmove.hash].move !== undefined) return;
+    chess.move(data.bestmove.move, { sloppy: true });
 
-  Moves[data.bestmove.hash].move = data.bestmove.move;
-  Moves[data.bestmove.hash].vm_time = data.bestmove.time;
+    Moves[data.bestmove.hash].move = data.bestmove.move;
+    Moves[data.bestmove.hash].vm_time = data.bestmove.time;
 
-  RefreshMoves();
+    RefreshMoves();
 
-  console.log(
-    "--------------------- // " +
-      data.bestmove.hash +
-      "  // docker image calculation (depth:" +
-      data.bestmove.depth +
-      ") time: " +
-      data.bestmove.time
-  );
+    console.log(
+        "--------------------- // " +
+            data.bestmove.hash +
+            "  // docker image calculation (depth:" +
+            data.bestmove.depth +
+            ") time: " +
+            data.bestmove.time,
+    );
 
-  ChessServer.sendChessPosition(chess.fen());
+    ChessServer.sendChessPosition(chess.fen());
 
-  ChessServer.sendChessMove(data.bestmove);
+    ChessServer.sendChessMove(data.bestmove);
 
-  console.log(
-    "====================\n\n" + chess.ascii() + "\n\n==================="
-  );
+    console.log("====================\n\n" + chess.ascii() + "\n\n===================");
 
-  if (chess.game_over()) {
-    console.log("!!!! game over !!!!!");
-    console.log(chess.ascii());
+    if (chess.game_over()) {
+        console.log("!!!! game over !!!!!");
+        console.log(chess.ascii());
 
-    if (chess.in_checkmate()) {
-      ChessServer.gameFinished({
-        winner: globalTurn === "w" ? "WHITE" : "BLACK",
-        type: "winner",
-      });
-    } else {
-      //chess.reset();
-      ChessServer.gameFinished({ winner: "", type: "draw" });
+        if (chess.in_checkmate()) {
+            ChessServer.gameFinished({
+                winner: globalTurn === "w" ? "WHITE" : "BLACK",
+                type: "winner",
+            });
+        } else {
+            //chess.reset();
+            ChessServer.gameFinished({ winner: "", type: "draw" });
+        }
+
+        return;
     }
 
-    return;
-  }
+    // next move
+    globalStep++;
+    globalTurn = globalTurn === "w" ? "b" : "w";
 
-  // next move
-  globalStep++;
-  globalTurn = globalTurn === "w" ? "b" : "w";
-
-  while (true) {
-    var success = await PerformGolemCalculationsWrapper({
-      turnId: globalTurn,
-      gameId: globalGameId,
-      gameStep: globalStep,
-      chess,
-    });
-    if (success) {
-      console.log("*** PerformGolemCalculations succeeded");
-      break;
-    } else {
-      console.log("*** PerformGolemCalculations failed... restarting");
+    while (true) {
+        var success = await PerformGolemCalculationsWrapper({
+            turnId: globalTurn,
+            gameId: globalGameId,
+            gameStep: globalStep,
+            chess,
+        });
+        if (success) {
+            console.log("*** PerformGolemCalculations succeeded");
+            break;
+        } else {
+            console.log("*** PerformGolemCalculations failed... restarting");
+        }
     }
-  }
 };
 
 var ListenerAgreementCreated = function ListenerAgreementCreated(data) {
-  false &&
-    console.log("agreement_created executed. " + JSON.stringify(data, null, 4));
-  ChessServer.agreementCreated(data);
+    false && console.log("agreement_created executed. " + JSON.stringify(data, null, 4));
+    ChessServer.agreementCreated(data);
 };
 
 var ListenerComputationFinished = function ListenerComputationFinished(data) {
-  true &&
-    console.log(
-      "computation_finished executed. " + JSON.stringify(data, null, 4)
-    );
-  ChessServer.computationFinished(data);
-  Moves[data.taskId].total_time = data.time;
+    true && console.log("computation_finished executed. " + JSON.stringify(data, null, 4));
+    ChessServer.computationFinished(data);
+    Moves[data.taskId].total_time = data.time;
 
-  RefreshMoves();
+    RefreshMoves();
 };
 
 var ListenerAgreementConfirmed = function ListenerAgreementConfirmed(data) {
-  false &&
-    console.log(
-      "agreement_confirmed executed. " + JSON.stringify(data, null, 4)
-    );
-  ChessServer.agreementConfirmed(data);
-  Moves[data.taskId].worker = data.providerName;
+    false && console.log("agreement_confirmed executed. " + JSON.stringify(data, null, 4));
+    ChessServer.agreementConfirmed(data);
+    Moves[data.taskId].worker = data.providerName;
 };
 
 var ListenerCalculationStarted = function ListenerCalculationStarted(data) {
-  false &&
-    console.log(
-      "calculation_started executed. " + JSON.stringify(data, null, 4)
-    );
+    false && console.log("calculation_started executed. " + JSON.stringify(data, null, 4));
 };
 
 var ListenerCalculationRequested = function ListenerCalculationRequested(data) {
-  false &&
-    console.log(
-      "calculation_requested executed. " + JSON.stringify(data, null, 4)
-    );
+    false && console.log("calculation_requested executed. " + JSON.stringify(data, null, 4));
 };
 
 var providerFailed = function providerFailed(data) {
-  console.log(
-    "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!  worker failed. " +
-      JSON.stringify(data, null, 4)
-  );
-  ChessServer.providerFailed(data);
-  if (Moves[data.taskId].failed === undefined) {
-    Moves[data.taskId].failed = data.providerName;
-    Moves[data.taskId].failed_times = 1;
-  } else {
-    Moves[data.taskId].failed += "..**.." + data.providerName;
-    Moves[data.taskId].failed_times++;
-  }
+    console.log(
+        "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!  worker failed. " + JSON.stringify(data, null, 4),
+    );
+    ChessServer.providerFailed(data);
+    if (Moves[data.taskId].failed === undefined) {
+        Moves[data.taskId].failed = data.providerName;
+        Moves[data.taskId].failed_times = 1;
+    } else {
+        Moves[data.taskId].failed += "..**.." + data.providerName;
+        Moves[data.taskId].failed_times++;
+    }
 };
 var ListenerInvoiceReceived = function ListenerInvoiceReceived(data) {
-  false &&
-    console.log("invoice_received executed. " + JSON.stringify(data, null, 4));
-  ChessServer.invoiceReceived(data);
+    false && console.log("invoice_received executed. " + JSON.stringify(data, null, 4));
+    ChessServer.invoiceReceived(data);
 
-  Moves[data.taskId].cost = data.totalCost;
-  // console.log("computation_finished . " + JSON.stringify(Moves, null, 4));
+    Moves[data.taskId].cost = data.totalCost;
+    // console.log("computation_finished . " + JSON.stringify(Moves, null, 4));
 
-  RefreshMoves();
+    RefreshMoves();
 };
 var ListenerComputationStarted = function ListenerComputationStarted(data) {
-  // console.log("computation_started executed. " + JSON.stringify(data, null, 4));
-  ChessServer.computationStarted(data);
+    // console.log("computation_started executed. " + JSON.stringify(data, null, 4));
+    ChessServer.computationStarted(data);
 };
 var ListenerOffersReceived = function ListenerOffersReceived(data) {
-  // console.log("data offers. " + JSON.stringify(data, null, 4));
-  ChessServer.offersReceived(data);
-  Moves[data.taskId].offers_count = data.offersCount;
+    // console.log("data offers. " + JSON.stringify(data, null, 4));
+    ChessServer.offersReceived(data);
+    Moves[data.taskId].offers_count = data.offersCount;
 };
 
 events.addListener("invoice_received", ListenerInvoiceReceived);
@@ -218,10 +178,10 @@ events.addListener("offers_received", ListenerOffersReceived);
 
 // starts the game with offset so all gui clients have time to reconnect
 setTimeout(() => {
-  PerformGolemCalculationsWrapper({
-    turnId: globalTurn,
-    gameId: globalGameId,
-    gameStep: globalStep,
-    chess,
-  });
+    PerformGolemCalculationsWrapper({
+        turnId: globalTurn,
+        gameId: globalGameId,
+        gameStep: globalStep,
+        chess,
+    });
 }, 5000);
