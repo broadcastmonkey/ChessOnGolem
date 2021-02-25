@@ -1,4 +1,4 @@
-const repo_config = require("./config/repo_config");
+const repo_config = require("./config/repo-config");
 const dayjs = require("dayjs");
 const duration = require("dayjs/plugin/duration");
 const { Executor, Task, utils, vm, WorkContext } = require("yajsapi");
