@@ -1,6 +1,6 @@
 const socketIO = require("socket.io"); // sock
 
-var commonEmitter = require("../event-emitter");
+var commonEmitter = require("./event-emitter");
 
 class ChessSocketServer {
     users = [];
