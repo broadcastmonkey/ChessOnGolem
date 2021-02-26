@@ -23,7 +23,7 @@ var __importStar =
         __setModuleDefault(result, mod);
         return result;
     };
-const { gethTaskIdHash } = require("./helpers/get-task-hash-id");
+const { getTaskIdHash } = require("./helpers/get-task-hash-id");
 const { eventNames } = require("./sockets/event-emitter");
 const events = __importStar(require("../node_modules/yajsapi/dist/executor/events"));
 
@@ -38,12 +38,12 @@ class WrappedEmitter {
     }
 
     getTaskId = () => {
-        return gethTaskIdHash(this.gameId, this.stepId);
+        return getTaskIdHash(this.gameId, this.stepId);
     };
     reset = () => {
         this.log_active = false;
         this.start_time = process.hrtime();
-        this.received_proposals = {};
+        this.received_proposals = new Set();
         this.confirmed_proposals = new Set();
         this.agreement_provider_name = {};
         this.confirmed_agreements = new Set();
@@ -67,13 +67,18 @@ class WrappedEmitter {
     };
 
     handleComputationFinished = (event) => {
+        console.log("1");
         this.debugLog("handleComputationFinished", event);
+        console.log("2");
         if (this.finished === true) return;
+        console.log("3");
         this.finished = true;
         var hrend = process.hrtime(this.start_time);
+        console.log("4");
         const timeInMs = (hrend[0] * 1000000000 + hrend[1]) / 1000000;
-
+        console.log("5");
         this.emitEvent("computation_finished", { time: timeInMs });
+        console.log("computation finished");
     };
     handleComputationStarted = (event) => {
         this.debugLog("handleComputationStarted", event);
@@ -85,7 +90,9 @@ class WrappedEmitter {
     };
     handleReceivedProposals = (event) => {
         this.debugLog("handleReceivedProposals", event);
-        this.received_proposals[event["prop_id"]] = event["provider_id"];
+        this.received_proposals[event.prop_id];
+
+        this.emitEvent("proposals_received", { proposalsCount: this.received_proposals.size });
     };
     handleProposalConfirmed = (event) => {
         this.debugLog("handleProposalConfirmed", event);
@@ -103,17 +110,25 @@ class WrappedEmitter {
         }
     };
     handleWorkerFinished = (event) => {
+        console.log("a");
         this.debugLog("handleWorkerFinished", event);
+        console.log("b");
         const provider_name = this.agreement_provider_name[event["agr_id"]];
-        this.Log(console.log(JSON.stringify(event, null, 4)));
+        console.log("c");
+        this.log(console.log(JSON.stringify(event, null, 4)));
+        console.log("d");
         if (event["exception"] !== null) {
             this.emitEvent("provider_failed", { providerName: provider_name });
+            console.log("e");
         } else {
+            console.log("f");
             this.log(" computation finished...");
             this.handleComputationFinished(event);
         }
+        console.log("g");
     };
     handleInvoiceReceived = (event) => {
+        console.log("invoice1");
         this.debugLog("handleInvoiceReceived", event);
         const provider_name = this.agreement_provider_name[event["agr_id"]];
         let cost = this.provider_cost[provider_name] || 0;
@@ -127,15 +142,19 @@ class WrappedEmitter {
         this.log(
             `Received an invoice from ${provider_name}. Amount: ${event["amount"]}; (so far: ${cost} from this provider).`,
         );
+        console.log("invoice9");
     };
     handleAgreementCreated = (event) => {
-        this.debugLog("handleAgreementCreated", event);
-        let provider_name = event["provider_info"].name.value;
+        this.debugLog("\n\n\n\n\n\n\nhandleAgreementCreated", event);
+        let provider_name = event["provider_info"].name._value;
+
         if (!provider_name) {
-            numbers++;
+            this.numbers++;
             provider_name = `provider-${numbers}`;
         }
+        console.log("name: " + provider_name);
         this.agreement_provider_name[event["agr_id"]] = provider_name;
+        console.log("2");
         this.log(`Agreement proposed to provider '${provider_name}'`);
         this.emitEvent("agreement_created", { providerName: provider_name });
     };
@@ -144,8 +163,7 @@ class WrappedEmitter {
         this.debugLog("handleAgreementConfirmed", event);
         let provider_name = this.agreement_provider_name[event["agr_id"]];
         this.log(`Agreement confirmed by provider '${provider_name}'`);
-        this.emit("agreement_confirmed", { providerName: provider_name });
-        this.agreement_provider_name[event["agr_id"]] = provider_name;
+        this.emitEvent("agreement_confirmed", { providerName: provider_name });
     };
 
     Process = (event) => {
@@ -190,15 +208,15 @@ class WrappedEmitter {
     };
     log = (message) => {
         if (toBool(process.env.LOG_ENABLED_YAJSAPI_EVENTS_ADDITIONAL_DATA))
-            console.log(`> %%% Task  ${this.getTaskId()}   -   ${message}`);
+            console.log(`> Yagna %%% Task  ${this.getTaskId()}   -   ${message}`);
     };
     debugAllEvents = (functionName, data) => {
         if (toBool(process.env.LOG_ENABLED_YAJSAPI_EVENTS_ALL_EVENTS))
-            console.log(`! Sockets::${functionName} ` + JSON.stringify(data, null, 4));
+            console.log(`! Yagna::${functionName} ` + JSON.stringify(data, null, 4));
     };
     debugLog = (functionName, data) => {
         if (toBool(process.env.LOG_ENABLED_YAJSAPI_EVENTS_FUNCTION_HEADER))
-            console.log(`> Sockets::${functionName} ` + JSON.stringify(data, null, 4));
+            console.log(`> Yagna::${functionName} ` + JSON.stringify(data, null, 4));
     };
 }
 

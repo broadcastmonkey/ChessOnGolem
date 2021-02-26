@@ -1,6 +1,6 @@
-const { PerformGolemCalculations } = require("../chess");
+const { performGolemCalculations } = require("../chess");
 const { Chess } = require("chess.js");
-const { gethTaskIdHash } = require("../helpers/get-task-hash-id");
+
 const toBool = require("to-bool");
 class ChessGame {
     constructor(id, chessServer) {
@@ -8,7 +8,7 @@ class ChessGame {
         this.moves = [];
         this.chess = new Chess();
         this.gameId = id;
-        this.gameStep = 1;
+        this.stepId = 1;
         this.globalTurn = "w";
     }
     start = () => {
@@ -16,27 +16,29 @@ class ChessGame {
         this.performGolemCalculationsWrapper({
             turnId: this.globalTurn,
             gameId: this.gameId,
-            gameStep: this.gameStep,
+            stepId: this.stepId,
+            player: "golem",
             chess: this.chess,
         });
     };
     performGolemCalculationsWrapper = async (data) => {
-        const { gameId } = data;
         data.depth = data.turnId == "w" ? 3 : 6;
-
-        data.taskId = gethTaskIdHash(data.gameId, data.gameStep);
-
         const { chess, ...dataForGui } = data;
+
+        this.debugLog("performGolemCalculationsWrapper", dataForGui);
+        const { gameId, stepId, turnId, depth } = data;
+
+        //
+
+        this.moves[stepId] = {};
+        this.moves[stepId].gameId = gameId;
+        this.moves[stepId].stepId = stepId;
+        this.moves[stepId].depth = depth;
+        this.moves[stepId].turn = turnId == "w" ? "white" : "black";
+
         this.chessServer.currentTurn(dataForGui);
 
-        this.moves[data.taskId] = {};
-        this.moves[data.taskId].gameId = data.gameId;
-        this.moves[data.taskId].nr = data.gameStep;
-        this.moves[data.taskId].taskId = data.taskId;
-        this.moves[data.taskId].depth = data.depth;
-        this.moves[data.taskId].turn = data.turnId == "w" ? "white" : "black";
-
-        return await PerformGolemCalculations(data);
+        return await performGolemCalculations(data);
     };
 
     refreshMoves = () => {
@@ -53,28 +55,29 @@ class ChessGame {
     calculationRequested = (data) => {
         this.debugLog("calculationRequested", data);
     };
-    computationStarted = () => {
+    computationStarted = (data) => {
         this.debugLog("computationStarted", data);
     };
     calculationCompleted = async (data) => {
-        const { bestmove } = data;
+        const { bestmove, stepId } = data;
+        const { move, time, depth } = bestmove;
         this.debugLog("calculationCompleted", data);
-        if (this.moves[bestmove.hash].move !== undefined) return;
-        this.chess.move(bestmove.move, { sloppy: true });
+        if (this.moves[stepId].move !== undefined) return;
+        this.chess.move(move, { sloppy: true });
 
-        this.moves[bestmove.hash].move = bestmove.move;
-        this.moves[bestmove.hash].vm_time = bestmove.time;
+        this.moves[stepId].move = move;
+        this.moves[stepId].vm_time = time;
 
         this.refreshMoves();
 
         if (toBool(process.env.LOG_ENABLED_CHESS_GAME_COMPLETED_CALCULATION_DETAILS))
             console.log(
                 "--------------------- // " +
-                    bestmove.hash +
+                    stepId +
                     "  // docker image calculation (depth:" +
-                    bestmove.depth +
+                    depth +
                     ") time: " +
-                    bestmove.time,
+                    time,
             );
 
         this.chessServer.sendChessPosition(this.chess.fen());
@@ -102,16 +105,17 @@ class ChessGame {
 
             return;
         }
+        return;
 
         // next move
-        this.gameStep++;
+        this.stepId++;
         this.globalTurn = this.globalTurn === "w" ? "b" : "w";
 
         while (true) {
             var success = await this.performGolemCalculationsWrapper({
                 turnId: this.globalTurn,
                 gameId: this.gameId,
-                gameStep: this.gameStep,
+                stepId: this.stepId,
                 chess: this.chess,
             });
             if (success) {
@@ -126,34 +130,46 @@ class ChessGame {
     };
     computationFinished = (data) => {
         this.debugLog("computationFinished", data);
+        const { stepId, time } = data;
+        this.moves[stepId].total_time = time;
         this.chessServer.computationFinished(data);
-        this.moves[data.taskId].total_time = data.time;
-
         this.refreshMoves();
     };
     agreementConfirmed = (data) => {
         this.debugLog("agreementConfirmed", data);
+        const { stepId, providerName } = data;
+        this.moves[stepId].worker = providerName;
         this.chessServer.agreementConfirmed(data);
-        this.moves[data.taskId].worker = data.providerName;
     };
     invoiceReceived = (data) => {
         this.debugLog("invoiceReceived", data);
-        this.moves[data.taskId].cost = data.totalCost;
+        const { stepId } = data;
+        this.moves[stepId].cost = data.totalCost;
+        this.chessServer.invoiceReceived(data);
     };
     offersReceived = (data) => {
         this.debugLog("offersReceived", data);
-        this.moves[data.taskId].offers_count = data.offersCount;
+        const { stepId, offersCount } = data;
+        this.moves[stepId].offers_count = offersCount;
         this.chessServer.offersReceived(data);
+    };
+    proposalsReceived = (data) => {
+        this.debugLog("proposalsReceived", data);
+        const { stepId, proposalsCount } = data;
+        this.moves[stepId].proposals_count = proposalsCount;
+        this.chessServer.proposalsReceived(data);
     };
     providerFailed = (data) => {
         this.debugLog("providerFailed", data);
-        if (this.moves[data.taskId].failed === undefined) {
-            this.moves[data.taskId].failed = data.providerName;
-            this.moves[data.taskId].failed_times = 1;
+        const { stepId, providerName } = data;
+        if (this.moves[stepId].failed === undefined) {
+            this.moves[stepId].failed = providerName;
+            this.moves[stepId].failed_times = 1;
         } else {
-            this.moves[data.taskId].failed += "..**.." + data.providerName;
-            this.moves[data.taskId].failed_times++;
+            this.moves[stepId].failed += "..**.." + providerName;
+            this.moves[stepId].failed_times++;
         }
+        this.chessServer.providerFailed(data);
     };
 
     debugLog = (functionName, data) => {

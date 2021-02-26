@@ -3,93 +3,91 @@ const dayjs = require("dayjs");
 const duration = require("dayjs/plugin/duration");
 const { Executor, Task, utils, vm, WorkContext } = require("yajsapi");
 const { ExtractBestMove } = require("./helpers/best-move-extractor");
-
+const toBool = require("to-bool");
 const WrappedEmitter = require("./wrapped-emitter");
 //const { program } = require("commander");
 
 const events = require("./sockets/event-emitter");
 const ChessPath = require("./helpers/chess-temp-path-helper");
 var fs = require("fs");
+const { debuglog } = require("util");
 dayjs.extend(duration);
 
-//console.log("extract : " + ExtractBestMove("  bestmove e2e4 ponder e7e6  "));
-
 const { asyncWith, logUtils, range } = utils;
-
-LogChess = function LogChess(data) {
-    console.log("!!!!!!!!!!!!!!!!!!!!!!!!!! " + JSON.stringify(data, null, 4));
+debugLog = (functionName, data) => {
+    if (toBool(process.env.LOG_ENABLED_YAJSAPI_WORKER))
+        if (data === undefined) console.log(`>>ChessWorker - ${functionName}`);
+        else console.log(`>>ChessWorker::${functionName} ` + JSON.stringify(data, null, 4));
 };
 
 LogMoveData = (data) =>
-    `[turnID]: ${data.turnId}, [gameId]: ${data.gameId}, [gameStep]: ${data.gameStep}`;
+    `[turnID]: ${data.turnId}, [gameId]: ${data.gameId}, [stepId]: ${data.stepId}`;
 
-PerformGolemCalculations = async (moveData) => {
+performGolemCalculations = async (moveData) => {
+    debugLog("performGolemCalculations", moveData);
     let subnetTag = process.env.GOLEM_SUBNET;
-    console.log(`Using subnet: ${subnetTag}`);
-    const { turnId, gameId, gameStep, chess, depth, taskId } = moveData;
+    debugLog(`Using subnet: ${subnetTag}`);
+    const { turnId, gameId, stepId, chess, depth, taskId } = moveData;
     var completed = false;
 
-    events.emit("calculation_requested", { gameId, gameStep });
+    events.emit("calculation_requested", { gameId, stepId });
 
-    Paths = new ChessPath(gameId, gameStep);
+    paths = new ChessPath(gameId, stepId);
     const _package = await vm.repo({
         image_hash: repo_config.docker_id,
         min_mem_gib: repo_config.min_ram,
         min_storage_gib: repo_config.min_disk,
         min_cpu_count: repo_config.min_cpu,
     });
-    console.log("input path: " + Paths.InputFilePath);
 
-    console.log(Paths.OutputFolder);
-
-    if (!fs.existsSync(Paths.OutputFolder)) {
-        fs.mkdirSync(Paths.OutputFolder, { recursive: true });
+    if (!fs.existsSync(paths.OutputFolder)) {
+        fs.mkdirSync(paths.OutputFolder, { recursive: true });
     }
 
-    if (!fs.existsSync(Paths.InputFolder)) {
-        fs.mkdirSync(Paths.InputFolder, { recursive: true });
+    if (!fs.existsSync(paths.InputFolder)) {
+        fs.mkdirSync(paths.InputFolder, { recursive: true });
     }
 
     // save fen position to file
 
-    fs.writeFileSync(Paths.ChessBoardFilePath, chess.ascii());
+    fs.writeFileSync(paths.ChessBoardFilePath, chess.ascii());
     fs.writeFileSync(
-        Paths.InputFilePath,
+        paths.InputFilePath,
         taskId + "\n" + depth + "\n" + "position fen " + chess.fen(),
     );
 
     async function* worker(ctx, tasks) {
         for await (let task of tasks) {
-            events.emit("calculation_started", { gameId, gameStep });
-            console.log("*** worker starts // " + LogMoveData(moveData));
+            events.emit("calculation_started", { gameId, stepId });
+            debugLog("*** worker starts // " + LogMoveData(moveData));
             //var task_id=task.data();
-            console.log(
+            debugLog(
                 "*** sending chessboard [" +
-                    Paths.InputFilePath +
+                    paths.InputFilePath +
                     "]" +
                     " >> \n" +
-                    fs.readFileSync(Paths.InputFilePath, "utf8"),
+                    fs.readFileSync(paths.InputFilePath, "utf8"),
             );
 
-            ctx.send_file(Paths.InputFilePath, "/golem/work/input.txt");
+            ctx.send_file(paths.InputFilePath, "/golem/work/input.txt");
             ctx.run("/bin/sh", [
                 "-c",
                 "node /golem/code2/chess_engine/bestmove.js > /golem/work/output2.txt",
             ]);
 
-            ctx.download_file("/golem/work/output.txt", Paths.OutputFilePath);
-            ctx.download_file("/golem/work/output2.txt", Paths.OutputLogFilePath);
-            console.log("*** downloading result for depth (" + depth + ") ... ");
+            ctx.download_file("/golem/work/output.txt", paths.OutputFilePath);
+            ctx.download_file("/golem/work/output2.txt", paths.OutputLogFilePath);
+            debugLog("*** downloading result for depth (" + depth + ") ... ");
             yield ctx.commit({
                 timeout: dayjs.duration({ seconds: 120 }).asMilliseconds(),
             });
 
-            if (fs.readFileSync(Paths.OutputFilePath, "utf8").includes("bestmove")) {
-                task.accept_result(Paths.OutputFilePath);
-                console.log("*** task completed succesfully !");
+            if (fs.readFileSync(paths.OutputFilePath, "utf8").includes("bestmove")) {
+                task.accept_result(paths.OutputFilePath);
+                debugLog("*** task completed succesfully !");
             } else {
                 task.reject_result((msg = "invalid file"));
-                console.log("*** task rejected !");
+                debugLog("*** task rejected !");
             }
         }
         return;
@@ -98,21 +96,18 @@ PerformGolemCalculations = async (moveData) => {
     const Subtasks = range(0, 1, 1);
     const timeout = dayjs.duration({ minutes: 15 }).asMilliseconds();
 
-    var emitter = new WrappedEmitter(gameId, gameStep);
-    var engine = await new Executor(
-        {
-            task_package: _package,
-            max_workers: 1,
-            timeout, //5 min to 30 min
-            budget: "0.02",
-            driver: "zksync",
-            subnet_tag: subnetTag,
-            network: "rinkeby",
+    var emitter = new WrappedEmitter(gameId, stepId);
+    var engine = await new Executor({
+        task_package: _package,
+        max_workers: 1,
+        timeout, //5 min to 30 min
+        budget: "0.02",
+        driver: "zksync",
+        subnet_tag: subnetTag,
+        network: "rinkeby",
 
-            event_consumer: logUtils.logSummary(emitter.Process),
-        },
-        //LogChess
-    );
+        event_consumer: logUtils.logSummary(emitter.Process),
+    });
     await asyncWith(engine, async (engine) => {
         for await (let subtask of engine.submit(
             worker,
@@ -120,7 +115,7 @@ PerformGolemCalculations = async (moveData) => {
         )) {
             if (fs.existsSync(subtask.result())) {
                 var bestmove = ExtractBestMove(fs.readFileSync(subtask.result(), "utf8"));
-                console.log(
+                debuglog(
                     "*** result =====> ",
                     bestmove.move + " time: " + bestmove.time + ", depth:" + bestmove.depth,
                 );
@@ -131,7 +126,7 @@ PerformGolemCalculations = async (moveData) => {
           // engine.done();
         }, 360 * 1000);*/
 
-                events.emit("calculation_completed", { gameId, gameStep, bestmove });
+                events.emit("calculation_completed", { gameId, stepId, bestmove });
                 return true;
             } else {
                 //engine.done();
@@ -146,5 +141,5 @@ PerformGolemCalculations = async (moveData) => {
 };
 
 module.exports = {
-    PerformGolemCalculations,
+    performGolemCalculations,
 };

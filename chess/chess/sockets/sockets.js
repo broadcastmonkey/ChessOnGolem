@@ -1,5 +1,6 @@
 const socketIO = require("socket.io"); // sock
 const toBool = require("to-bool");
+const { getTaskIdHash } = require("../helpers/get-task-hash-id");
 class ChessSocketServer {
     users = [];
 
@@ -54,10 +55,21 @@ class ChessSocketServer {
         });
     }
 
+    emitEvent(eventName, data) {
+        if (data.gameId !== undefined && data.stepId !== undefined) {
+            data = { ...data, taskId: getTaskIdHash(data.gameId, data.stepId) };
+        }
+        this.io.to("chess").emit(eventName, data);
+
+        if (toBool(process.env.LOG_ENABLED_SOCKETS_EMITTED_EVENTS))
+            console.log(
+                `> sending to gui  ${eventName}   with payload ` + JSON.stringify(data, null, 4),
+            );
+    }
     currentTurn = (turnData) => {
         this.debugLog("currentTurn", turnData);
         this.lastMoveData = turnData;
-        this.io.to("chess").emit("currentTurnEvent", turnData);
+        this.emitEvent("currentTurnEvent", turnData);
     };
 
     providerFailed = (provider) => {
@@ -84,6 +96,10 @@ class ChessSocketServer {
     offersReceived = (data) => {
         this.debugLog("offersReceived", data);
         this.io.to("chess").emit("offersReceived", data);
+    };
+    proposalsReceived = (data) => {
+        this.debugLog("proposalsReceived", data);
+        this.io.to("chess").emit("proposalsReceived", data);
     };
 
     agreementCreated = (agreement) => {

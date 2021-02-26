@@ -9,6 +9,7 @@ class GamesManager {
         this.chessServer = chessServer;
         events.addListener("agreement_created", this.agreementCreated);
         events.addListener("offers_received", this.offersReceived);
+        events.addListener("proposals_received", this.proposalsReceived);
         events.addListener("agreement_confirmed", this.agreementConfirmed);
         events.addListener("calculation_requested", this.calculationRequested);
         events.addListener("computation_started", this.computationStarted);
@@ -20,15 +21,18 @@ class GamesManager {
     }
 
     startSampleGame = () => {
+        console.log("[i] starting new game ... ");
         this.currentGameId++;
         this.addGame(this.currentGameId)?.start();
     };
 
     addGame = (id) => {
-        if (this.getGame(id) !== undefined) return undefined;
+        if (this.getGame(id) !== undefined) {
+            console.log(`!!! game with id: ${id} already exists`);
+            return undefined;
+        }
         const game = new ChessGame(id, this.chessServer);
         this.games.push(game);
-        //console.log(this.games);
         return game;
     };
     getGame = (id) => {
@@ -90,6 +94,11 @@ class GamesManager {
         const { gameId } = data;
         this.debugLog("offersReceived", data);
         this.games.find((x) => x.gameId === gameId)?.offersReceived(data);
+    };
+    proposalsReceived = (data) => {
+        const { gameId } = data;
+        this.debugLog("proposalsReceived", data);
+        this.games.find((x) => x.gameId === gameId)?.proposalsReceived(data);
     };
 
     debugLog = (functionName, data) => {
