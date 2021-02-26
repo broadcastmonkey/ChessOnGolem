@@ -32,75 +32,72 @@ class GamesManager {
         if (this.getGame(id) !== undefined) return undefined;
         const game = new ChessGame(id, this.chessServer);
         this.games.push(game);
+        console.log(this.games);
         return game;
     };
     getGame = (id) => {
-        return this.games.find((x) => x.id === id);
+        return this.games.find((x) => x.gameId === id);
     };
 
-    calculationCompleted = async function ListenerCalculationCompleted(data) {
+    calculationCompleted = async (data) => {
         const { gameId } = data;
         this.debugLog("calculationCompleted", data);
-        this.Games.find((x) => x.id === gameId)?.calculationCompleted(data);
+        this.games.find((x) => x.gameId === gameId)?.calculationCompleted(data);
     };
 
     agreementCreated = (data) => {
         const { gameId } = data;
         this.debugLog("agreementCreated", data);
-        this.games.find((x) => x.id === gameId)?.agreementCreated(data);
+        this.games.find((x) => x.gameId === gameId)?.agreementCreated(data);
     };
 
     computationFinished = (data) => {
         const { gameId } = data;
         this.debugLog("computationFinished", data);
-        this.games.find((x) => x.id === gameId)?.computationFinished(data);
+        this.games.find((x) => x.gameId === gameId)?.computationFinished(data);
     };
 
     agreementConfirmed = (data) => {
         const { gameId } = data;
         this.debugLog("agreementConfirmed", data);
-        this.games.find((x) => x.id === gameId)?.agreementConfirmed(data);
+        this.games.find((x) => x.gameId === gameId)?.agreementConfirmed(data);
     };
 
     calculationStarted = (data) => {
         const { gameId } = data;
         this.debugLog("calculationStarted", data);
-        this.games.find((x) => x.id === gameId)?.calculationStarted(data);
+        this.games.find((x) => x.gameId === gameId)?.calculationStarted(data);
     };
 
     calculationRequested = (data) => {
         const { gameId } = data;
         this.debugLog("calculationRequested", data);
-        this.games.find((x) => x.id === gameId)?.calculationRequested(data);
+        this.games.find((x) => x.gameId === gameId)?.calculationRequested(data);
     };
 
     providerFailed = (data) => {
         const { gameId } = data;
         this.debugLog("providerFailed", data);
-        this.games.find((x) => x.id === gameId)?.providerFailed(data);
+        this.games.find((x) => x.gameId === gameId)?.providerFailed(data);
     };
     invoiceReceived = (data) => {
         const { gameId } = data;
         this.debugLog("invoiceReceived", data);
-        this.games.find((x) => x.id === gameId)?.invoiceReceived(data);
+        this.games.find((x) => x.gameId === gameId)?.invoiceReceived(data);
     };
     computationStarted = (data) => {
         const { gameId } = data;
         this.debugLog("computationStarted", data);
-        this.games.find((x) => x.id === gameId)?.computationStarted(data);
+        this.games.find((x) => x.gameId === gameId)?.computationStarted(data);
     };
     offersReceived = (data) => {
         const { gameId } = data;
         this.debugLog("offersReceived", data);
-        this.games.find((x) => x.id === gameId)?.offersReceived(data);
+        this.games.find((x) => x.gameId === gameId)?.offersReceived(data);
     };
 
     debugLog = (functionName, data) => {
-        console.log(` GamesManager::${functionName} ` + JSON.stringify(data, null, 4));
-    };
-
-    getFuncName = () => {
-        return this.getFuncName.caller.name;
+        console.log(`>GamesManager::${functionName} ` + JSON.stringify(data, null, 4));
     };
 }
 

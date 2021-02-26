@@ -9,7 +9,7 @@ class ChessGame {
         this.chessServer = chessServer;
         this.moves = [];
         this.chess = new Chess();
-        this.globalGameId = id;
+        this.gameId = id;
         this.globalStep = 1;
         this.globalTurn = "w";
     }
@@ -17,7 +17,7 @@ class ChessGame {
         console.log("starting pos: \n" + this.chess.ascii());
         this.performGolemCalculationsWrapper({
             turnId: this.globalTurn,
-            gameId: this.globalGameId,
+            gameId: this.gameId,
             gameStep: this.globalStep,
             chess: this.chess,
         });
@@ -41,20 +41,29 @@ class ChessGame {
     };
 
     refreshMoves = () => {
+        this.debugLog("refreshMoves", "");
         chessServer.sendMovesList(this.moves);
     };
-    calculationStarted = () => {};
+    calculationStarted = (data) => {
+        this.debugLog("calculationStarted", data);
+    };
     agreementCreated = (data) => {
+        this.debugLog("agreementCreated", data);
         ChessServer.agreementCreated(data);
     };
-    calculationRequested = () => {};
-    computationStarted = () => {};
+    calculationRequested = (data) => {
+        this.debugLog("calculationRequested", data);
+    };
+    computationStarted = () => {
+        this.debugLog("computationStarted", data);
+    };
     calculationCompleted = async (data) => {
-        if (Moves[data.bestmove.hash].move !== undefined) return;
-        chess.move(data.bestmove.move, { sloppy: true });
+        this.debugLog("calculationCompleted", data);
+        if (this.moves[data.bestmove.hash].move !== undefined) return;
+        this.chess.move(data.bestmove.move, { sloppy: true });
 
-        Moves[data.bestmove.hash].move = data.bestmove.move;
-        Moves[data.bestmove.hash].vm_time = data.bestmove.time;
+        this.moves[data.bestmove.hash].move = data.bestmove.move;
+        this.moves[data.bestmove.hash].vm_time = data.bestmove.time;
 
         RefreshMoves();
 
@@ -67,32 +76,32 @@ class ChessGame {
                 data.bestmove.time,
         );
 
-        ChessServer.sendChessPosition(chess.fen());
+        this.chessServer.sendChessPosition(chess.fen());
 
-        ChessServer.sendChessMove(data.bestmove);
+        this.chessServer.sendChessMove(data.bestmove);
 
         console.log("====================\n\n" + chess.ascii() + "\n\n===================");
 
-        if (chess.game_over()) {
+        if (this.chess.game_over()) {
             console.log("!!!! game over !!!!!");
             console.log(chess.ascii());
 
-            if (chess.in_checkmate()) {
-                ChessServer.gameFinished({
+            if (this.chess.in_checkmate()) {
+                this.chessServer.gameFinished({
                     winner: globalTurn === "w" ? "WHITE" : "BLACK",
                     type: "winner",
                 });
             } else {
                 //chess.reset();
-                ChessServer.gameFinished({ winner: "", type: "draw" });
+                this.chessServer.gameFinished({ winner: "", type: "draw" });
             }
 
             return;
         }
 
         // next move
-        globalStep++;
-        globalTurn = globalTurn === "w" ? "b" : "w";
+        this.globalStep++;
+        this.globalTurn = globalTurn === "w" ? "b" : "w";
 
         while (true) {
             var success = await this.performGolemCalculationsWrapper({
@@ -110,30 +119,39 @@ class ChessGame {
         }
     };
     computationFinished = (data) => {
-        ChessServer.computationFinished(data);
-        Moves[data.taskId].total_time = data.time;
+        this.debugLog("computationFinished", data);
+        this.chessServer.computationFinished(data);
+        this.moves[data.taskId].total_time = data.time;
 
         RefreshMoves();
     };
     agreementConfirmed = (data) => {
-        ChessServer.agreementConfirmed(data);
-        Moves[data.taskId].worker = data.providerName;
+        this.debugLog("agreementConfirmed", data);
+        this.chessServer.agreementConfirmed(data);
+        this.moves[data.taskId].worker = data.providerName;
     };
     invoiceReceived = (data) => {
-        Moves[data.taskId].cost = data.totalCost;
+        this.debugLog("invoiceReceived", data);
+        this.moves[data.taskId].cost = data.totalCost;
     };
     offersReceived = (data) => {
-        Moves[data.taskId].offers_count = data.offersCount;
-        ChessServer.offersReceived(data);
+        this.debugLog("offersReceived", data);
+        this.moves[data.taskId].offers_count = data.offersCount;
+        this.chessServer.offersReceived(data);
     };
     providerFailed = (data) => {
-        if (Moves[data.taskId].failed === undefined) {
-            Moves[data.taskId].failed = data.providerName;
-            Moves[data.taskId].failed_times = 1;
+        this.debugLog("providerFailed", data);
+        if (this.moves[data.taskId].failed === undefined) {
+            this.moves[data.taskId].failed = data.providerName;
+            this.moves[data.taskId].failed_times = 1;
         } else {
-            Moves[data.taskId].failed += "..**.." + data.providerName;
-            Moves[data.taskId].failed_times++;
+            this.moves[data.taskId].failed += "..**.." + data.providerName;
+            this.moves[data.taskId].failed_times++;
         }
+    };
+
+    debugLog = (functionName, data) => {
+        console.log(`>>>ChessGame::${functionName} ` + JSON.stringify(data, null, 4));
     };
 }
 

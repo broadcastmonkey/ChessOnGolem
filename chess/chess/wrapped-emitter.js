@@ -22,18 +22,22 @@ var __importStar =
         __setModuleDefault(result, mod);
         return result;
     };
-
+const { gethTaskIdHash } = require("./helpers/get-task-hash-id");
 const events = __importStar(require("../node_modules/yajsapi/dist/executor/events"));
 
 class WrappedEmitter {
-    constructor(task) {
+    constructor(gameId, stepId) {
         this.reset();
-
-        this.TaskId = task;
+        this.gameId = gameId;
+        this.stepId = stepId;
+        //this.TaskId = task;
         this.numbers = 0;
         this.Active = true;
     }
 
+    getTaskId = () => {
+        return gethTaskIdHash(this.gameId, this.stepId);
+    };
     reset = () => {
         this.log_active = false;
         this.start_time = process.hrtime();
@@ -56,12 +60,12 @@ class WrappedEmitter {
     };
 
     Stop = () => {
-        console.log("stopping emitter " + this.TaskId);
+        console.log("stopping emitter " + this.getTaskId());
         this.Active = false;
     };
 
     ShouldReturn = () => {
-        return this.TaskId === undefined || this.TaskId === null || this.Active === false;
+        return this.gameId === undefined || this.gameId === null || this.Active === false;
     };
 
     computationFinished = () => {
@@ -73,12 +77,13 @@ class WrappedEmitter {
         const timeInMs = (hrend[0] * 1000000000 + hrend[1]) / 1000000;
         //console.log("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%55 f3 ");
         this.Log(
-            `****************************** TASK ${this.TaskId} / total calculation time of  is ${timeInMs}'`,
+            `****************************** TASK ${this.getTaskId()} / total calculation time of  is ${timeInMs}'`,
         );
         // console.log("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%55 f4 ");
         eventsEmitter.emit("computation_finished", {
             time: timeInMs,
-            taskId: this.TaskId,
+            gameId: this.gameId,
+            stepId: this.stepId,
         });
         //console.log("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%55 f5 ");
     };
@@ -86,10 +91,10 @@ class WrappedEmitter {
         if (this.ShouldReturn()) return;
 
         const eventName = event.constructor.name;
-        this.Log(`@@@@@@@@@@@@@@@@@@@@ TASK ${this.TaskId} / EVENT : #${eventName}#'`);
+        this.Log(`@@@@@@@@@@@@@@@@@@@@ TASK ${this.getTaskId()} / EVENT : #${eventName}#'`);
         if (eventName === events.ComputationStarted.name) {
-            this.Log(`@@@@@@@@@@@@@@@@@@@@ TASK ${this.TaskId} /  computation started`, true);
-            eventsEmitter.emit("computation_started", { taskId: this.TaskId });
+            this.Log(`@@@@@@@@@@@@@@@@@@@@ TASK ${this.getTaskId()} /  computation started`, true);
+            eventsEmitter.emit("computation_started", { gameId: this.gameId, stepId: this.stepId });
             this.reset();
         } else if (eventName === events.ComputationFinished.name) {
             this.computationFinished();
@@ -103,25 +108,28 @@ class WrappedEmitter {
             );
             eventsEmitter.emit("offers_received", {
                 offersCount: confirmed_providers.size,
-                taskId: this.TaskId,
+                gameId: this.gameId,
+                stepId: this.stepId,
             });
         } else if (eventName === events.CommandExecuted.name) {
-            this.Log(`@@@@@@@@@@@@@@@@@@@@ TASK ${this.TaskId} /  command executed...`);
+            this.Log(`@@@@@@@@@@@@@@@@@@@@ TASK ${this.getTaskId()} /  command executed...`);
             if (!event["success"]) {
                 const provider_name = this.agreement_provider_name[event["agr_id"]];
                 eventsEmitter.emit("provider_failed", {
-                    taskId: this.TaskId,
+                    gameId: this.gameId,
+                    stepId: this.stepId,
                     providerName: provider_name,
                 });
             }
         } else if (eventName === events.WorkerFinished.name) {
-            this.Log(`@@@@@@@@@@@@@@@@@@@@ TASK ${this.TaskId} /  worker finished...`);
+            this.Log(`@@@@@@@@@@@@@@@@@@@@ TASK ${this.getTaskId()} /  worker finished...`);
 
             const provider_name = this.agreement_provider_name[event["agr_id"]];
             this.Log(console.log(JSON.stringify(event, null, 4)));
             if (event["exception"] !== null) {
                 eventsEmitter.emit("provider_failed", {
-                    taskId: this.TaskId,
+                    gameId: this.gameId,
+                    stepId: this.stepId,
                     providerName: provider_name,
                 });
             } else {
@@ -135,13 +143,16 @@ class WrappedEmitter {
             cost += parseFloat(event["amount"]);
             this.provider_cost[provider_name] = cost;
             eventsEmitter.emit("invoice_received", {
-                taskId: this.TaskId,
+                gameId: this.gameId,
+                stepId: this.stepId,
                 providerName: provider_name,
                 totalCost: event["amount"] /*cost,*/,
                 eventCost: event["amount"],
             });
             this.Log(
-                ` @@@@@@@@@@@@@@@@@@@@@@ TASK ${this.TaskId} /  Received an invoice from ${provider_name}. Amount: ${event["amount"]}; (so far: ${cost} from this provider).`,
+                ` @@@@@@@@@@@@@@@@@@@@@@ TASK ${this.getTaskId()} /  Received an invoice from ${provider_name}. Amount: ${
+                    event["amount"]
+                }; (so far: ${cost} from this provider).`,
             );
         } else if (eventName === events.AgreementCreated.name) {
             if (this.Active === false) return;
@@ -151,12 +162,13 @@ class WrappedEmitter {
                 provider_name = `provider-${numbers}`;
             }
             this.Log(
-                `@@@@@@@@@@@@@@@@@@@@ TASK ${this.TaskId} /  Agreement proposed to provider '${provider_name}'`,
+                `@@@@@@@@@@@@@@@@@@@@ TASK ${this.getTaskId()} /  Agreement proposed to provider '${provider_name}'`,
             );
 
             eventsEmitter.emit("agreement_created", {
                 providerName: provider_name,
-                taskId: this.TaskId,
+                gameId: this.gameId,
+                stepId: this.stepId,
             });
 
             this.agreement_provider_name[event["agr_id"]] = provider_name;
@@ -165,12 +177,13 @@ class WrappedEmitter {
             let provider_name = this.agreement_provider_name[event["agr_id"]];
 
             this.Log(
-                `@@@@@@@@@@@@@@@@@@@@ TASK ${this.TaskId} /  Agreement confirmed by provider '${provider_name}'`,
+                `@@@@@@@@@@@@@@@@@@@@ TASK ${this.gameId()} /  Agreement confirmed by provider '${provider_name}'`,
             );
 
             eventsEmitter.emit("agreement_confirmed", {
                 providerName: provider_name,
-                taskId: this.TaskId,
+                gameId: this.gameId,
+                stepId: this.stepId,
             });
 
             this.agreement_provider_name[event["agr_id"]] = provider_name;
