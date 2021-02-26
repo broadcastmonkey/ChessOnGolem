@@ -12,7 +12,7 @@ const ChessPath = require("./helpers/chess-temp-path-helper");
 var fs = require("fs");
 dayjs.extend(duration);
 
-console.log("extract : " + ExtractBestMove("  bestmove e2e4 ponder e7e6  "));
+//console.log("extract : " + ExtractBestMove("  bestmove e2e4 ponder e7e6  "));
 
 const { asyncWith, logUtils, range } = utils;
 
@@ -98,7 +98,7 @@ PerformGolemCalculations = async (moveData) => {
     const Subtasks = range(0, 1, 1);
     const timeout = dayjs.duration({ minutes: 15 }).asMilliseconds();
 
-    var emitter = new WrappedEmitter(taskId);
+    var emitter = new WrappedEmitter(gameId, gameStep);
     var engine = await new Executor(
         {
             task_package: _package,

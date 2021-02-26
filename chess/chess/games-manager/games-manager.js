@@ -1,10 +1,6 @@
-const express = require("express");
-const https = require("https");
-const fs = require("fs");
 const ChessGame = require("./chess-game");
 const events = require("../sockets/event-emitter");
-const { runInThisContext } = require("vm");
-
+const toBool = require("to-bool");
 events.setMaxListeners(100);
 class GamesManager {
     constructor(chessServer) {
@@ -32,7 +28,7 @@ class GamesManager {
         if (this.getGame(id) !== undefined) return undefined;
         const game = new ChessGame(id, this.chessServer);
         this.games.push(game);
-        console.log(this.games);
+        //console.log(this.games);
         return game;
     };
     getGame = (id) => {
@@ -97,7 +93,8 @@ class GamesManager {
     };
 
     debugLog = (functionName, data) => {
-        console.log(`>GamesManager::${functionName} ` + JSON.stringify(data, null, 4));
+        if (toBool(process.env.LOG_ENABLED_GAMES_MANAGER))
+            console.log(`>>GamesManager::${functionName} ` + JSON.stringify(data, null, 4));
     };
 }
 

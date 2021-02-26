@@ -15,6 +15,7 @@
         "dotenv": "^8.2.0",
         "express": "^4.17.1",
         "socketio": "^1.0.0",
+        "to-bool": "^0.0.1",
         "ts-node": "^9.0.0",
         "yajsapi": "^0.3.0"
     },

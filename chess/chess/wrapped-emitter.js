@@ -1,6 +1,7 @@
 //tapping into yajsapi's event loop
 
 const eventsEmitter = require("./sockets/event-emitter");
+const toBool = require("to-bool");
 var __setModuleDefault =
     (this && this.__setModuleDefault) ||
     (Object.create
@@ -23,6 +24,7 @@ var __importStar =
         return result;
     };
 const { gethTaskIdHash } = require("./helpers/get-task-hash-id");
+const { eventNames } = require("./sockets/event-emitter");
 const events = __importStar(require("../node_modules/yajsapi/dist/executor/events"));
 
 class WrappedEmitter {
@@ -55,10 +57,6 @@ class WrappedEmitter {
         // time_waiting_for_proposals = dayjs_1.default.duration(0);
     };
 
-    Log = (msg, param = false) => {
-        (param || this.log_active) && console.log(msg);
-    };
-
     Stop = () => {
         console.log("stopping emitter " + this.getTaskId());
         this.Active = false;
@@ -68,126 +66,139 @@ class WrappedEmitter {
         return this.gameId === undefined || this.gameId === null || this.Active === false;
     };
 
-    computationFinished = () => {
+    handleComputationFinished = (event) => {
+        this.debugLog("handleComputationFinished", event);
         if (this.finished === true) return;
         this.finished = true;
-        //console.log("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%55 f1 ");
         var hrend = process.hrtime(this.start_time);
-        //console.log("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%55 f2 ");
         const timeInMs = (hrend[0] * 1000000000 + hrend[1]) / 1000000;
-        //console.log("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%55 f3 ");
-        this.Log(
-            `****************************** TASK ${this.getTaskId()} / total calculation time of  is ${timeInMs}'`,
-        );
-        // console.log("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%55 f4 ");
-        eventsEmitter.emit("computation_finished", {
-            time: timeInMs,
-            gameId: this.gameId,
-            stepId: this.stepId,
-        });
-        //console.log("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%55 f5 ");
+
+        this.emitEvent("computation_finished", { time: timeInMs });
     };
+    handleComputationStarted = (event) => {
+        this.debugLog("handleComputationStarted", event);
+        this.emitEvent("computation_started", {});
+        this.reset();
+    };
+    handleNoProposalsConfirmed = (event) => {
+        this.debugLog("handleNoProposalsConfirmed", event);
+    };
+    handleReceivedProposals = (event) => {
+        this.debugLog("handleReceivedProposals", event);
+        this.received_proposals[event["prop_id"]] = event["provider_id"];
+    };
+    handleProposalConfirmed = (event) => {
+        this.debugLog("handleProposalConfirmed", event);
+        this.confirmed_proposals.add(event["prop_id"]);
+        const confirmed_providers = new Set(
+            [...this.confirmed_proposals].map((prop_id) => this.received_proposals[prop_id]),
+        );
+        this.emitEvent("offers_received", { offersCount: confirmed_providers.size });
+    };
+    handleCommandExecuted = (event) => {
+        this.debugLog("handleCommandExecuted", event);
+        if (!event["success"]) {
+            const provider_name = this.agreement_provider_name[event["agr_id"]];
+            this.emitEvent("provider_failed", { providerName: provider_name });
+        }
+    };
+    handleWorkerFinished = (event) => {
+        this.debugLog("handleWorkerFinished", event);
+        const provider_name = this.agreement_provider_name[event["agr_id"]];
+        this.Log(console.log(JSON.stringify(event, null, 4)));
+        if (event["exception"] !== null) {
+            this.emitEvent("provider_failed", { providerName: provider_name });
+        } else {
+            this.log(" computation finished...");
+            this.handleComputationFinished(event);
+        }
+    };
+    handleInvoiceReceived = (event) => {
+        this.debugLog("handleInvoiceReceived", event);
+        const provider_name = this.agreement_provider_name[event["agr_id"]];
+        let cost = this.provider_cost[provider_name] || 0;
+        cost += parseFloat(event["amount"]);
+        this.provider_cost[provider_name] = cost;
+        this.emitEvent("invoice_received", {
+            providerName: provider_name,
+            totalCost: event["amount"] /*cost,*/,
+            eventCost: event["amount"],
+        });
+        this.log(
+            `Received an invoice from ${provider_name}. Amount: ${event["amount"]}; (so far: ${cost} from this provider).`,
+        );
+    };
+    handleAgreementCreated = (event) => {
+        this.debugLog("handleAgreementCreated", event);
+        let provider_name = event["provider_info"].name.value;
+        if (!provider_name) {
+            numbers++;
+            provider_name = `provider-${numbers}`;
+        }
+        this.agreement_provider_name[event["agr_id"]] = provider_name;
+        this.log(`Agreement proposed to provider '${provider_name}'`);
+        this.emitEvent("agreement_created", { providerName: provider_name });
+    };
+
+    handleAgreementConfirmed = (event) => {
+        this.debugLog("handleAgreementConfirmed", event);
+        let provider_name = this.agreement_provider_name[event["agr_id"]];
+        this.log(`Agreement confirmed by provider '${provider_name}'`);
+        this.emit("agreement_confirmed", { providerName: provider_name });
+        this.agreement_provider_name[event["agr_id"]] = provider_name;
+    };
+
     Process = (event) => {
         if (this.ShouldReturn()) return;
 
         const eventName = event.constructor.name;
-        this.Log(`@@@@@@@@@@@@@@@@@@@@ TASK ${this.getTaskId()} / EVENT : #${eventName}#'`);
+        this.debugAllEvents(`process / ${eventName}`, event);
         if (eventName === events.ComputationStarted.name) {
-            this.Log(`@@@@@@@@@@@@@@@@@@@@ TASK ${this.getTaskId()} /  computation started`, true);
-            eventsEmitter.emit("computation_started", { gameId: this.gameId, stepId: this.stepId });
-            this.reset();
+            this.handleComputationStarted(event);
         } else if (eventName === events.ComputationFinished.name) {
-            this.computationFinished();
+            this.handleComputationFinished(event);
         } else if (eventName === events.NoProposalsConfirmed.name) {
+            this.handleNoProposalsConfirmed(event);
         } else if (eventName === events.ProposalReceived.name) {
-            this.received_proposals[event["prop_id"]] = event["provider_id"];
+            this.handleReceivedProposals(event);
         } else if (eventName === events.ProposalConfirmed.name) {
-            this.confirmed_proposals.add(event["prop_id"]);
-            const confirmed_providers = new Set(
-                [...this.confirmed_proposals].map((prop_id) => this.received_proposals[prop_id]),
-            );
-            eventsEmitter.emit("offers_received", {
-                offersCount: confirmed_providers.size,
-                gameId: this.gameId,
-                stepId: this.stepId,
-            });
+            this.handleProposalConfirmed(event);
         } else if (eventName === events.CommandExecuted.name) {
-            this.Log(`@@@@@@@@@@@@@@@@@@@@ TASK ${this.getTaskId()} /  command executed...`);
-            if (!event["success"]) {
-                const provider_name = this.agreement_provider_name[event["agr_id"]];
-                eventsEmitter.emit("provider_failed", {
-                    gameId: this.gameId,
-                    stepId: this.stepId,
-                    providerName: provider_name,
-                });
-            }
+            this.handleCommandExecuted(event);
         } else if (eventName === events.WorkerFinished.name) {
-            this.Log(`@@@@@@@@@@@@@@@@@@@@ TASK ${this.getTaskId()} /  worker finished...`);
-
-            const provider_name = this.agreement_provider_name[event["agr_id"]];
-            this.Log(console.log(JSON.stringify(event, null, 4)));
-            if (event["exception"] !== null) {
-                eventsEmitter.emit("provider_failed", {
-                    gameId: this.gameId,
-                    stepId: this.stepId,
-                    providerName: provider_name,
-                });
-            } else {
-                this.Log("???? computation finished...");
-                this.computationFinished();
-            }
+            this.handleWorkerFinished(event);
         } else if (eventName === events.InvoiceReceived.name) {
-            this.Log("@@@@@@@@@@@@@@@@@@@@ INVOICE ", true);
-            const provider_name = this.agreement_provider_name[event["agr_id"]];
-            let cost = this.provider_cost[provider_name] || 0;
-            cost += parseFloat(event["amount"]);
-            this.provider_cost[provider_name] = cost;
-            eventsEmitter.emit("invoice_received", {
-                gameId: this.gameId,
-                stepId: this.stepId,
-                providerName: provider_name,
-                totalCost: event["amount"] /*cost,*/,
-                eventCost: event["amount"],
-            });
-            this.Log(
-                ` @@@@@@@@@@@@@@@@@@@@@@ TASK ${this.getTaskId()} /  Received an invoice from ${provider_name}. Amount: ${
-                    event["amount"]
-                }; (so far: ${cost} from this provider).`,
-            );
+            this.handleInvoiceReceived(event);
         } else if (eventName === events.AgreementCreated.name) {
-            if (this.Active === false) return;
-            let provider_name = event["provider_info"].name.value;
-            if (!provider_name) {
-                numbers++;
-                provider_name = `provider-${numbers}`;
-            }
-            this.Log(
-                `@@@@@@@@@@@@@@@@@@@@ TASK ${this.getTaskId()} /  Agreement proposed to provider '${provider_name}'`,
-            );
-
-            eventsEmitter.emit("agreement_created", {
-                providerName: provider_name,
-                gameId: this.gameId,
-                stepId: this.stepId,
-            });
-
-            this.agreement_provider_name[event["agr_id"]] = provider_name;
+            this.handleAgreementCreated(event);
         } else if (eventName === events.AgreementConfirmed.name) {
-            if (this.Active === false) return;
-            let provider_name = this.agreement_provider_name[event["agr_id"]];
-
-            this.Log(
-                `@@@@@@@@@@@@@@@@@@@@ TASK ${this.gameId()} /  Agreement confirmed by provider '${provider_name}'`,
+            this.handleAgreementConfirmed(event);
+        }
+    };
+    emitEvent = (eventName, data) => {
+        const payload = {
+            gameId: this.gameId,
+            stepId: this.stepId,
+            ...data,
+        };
+        if (toBool(process.env.LOG_ENABLED_YAJSAPI_EVENTS_EMITTED_EVENTS))
+            console.log(
+                `> sending task  ${eventName}   with payload ` + JSON.stringify(payload, null, 4),
             );
 
-            eventsEmitter.emit("agreement_confirmed", {
-                providerName: provider_name,
-                gameId: this.gameId,
-                stepId: this.stepId,
-            });
-
-            this.agreement_provider_name[event["agr_id"]] = provider_name;
-        }
+        eventsEmitter.emit(eventName, payload);
+    };
+    log = (message) => {
+        if (toBool(process.env.LOG_ENABLED_YAJSAPI_EVENTS_ADDITIONAL_DATA))
+            console.log(`> %%% Task  ${this.getTaskId()}   -   ${message}`);
+    };
+    debugAllEvents = (functionName, data) => {
+        if (toBool(process.env.LOG_ENABLED_YAJSAPI_EVENTS_ALL_EVENTS))
+            console.log(`! Sockets::${functionName} ` + JSON.stringify(data, null, 4));
+    };
+    debugLog = (functionName, data) => {
+        if (toBool(process.env.LOG_ENABLED_YAJSAPI_EVENTS_FUNCTION_HEADER))
+            console.log(`> Sockets::${functionName} ` + JSON.stringify(data, null, 4));
     };
 }
 

@@ -1,16 +1,14 @@
-const express = require("express");
-const https = require("https");
-const fs = require("fs");
 const { PerformGolemCalculations } = require("../chess");
 const { Chess } = require("chess.js");
 const { gethTaskIdHash } = require("../helpers/get-task-hash-id");
+const toBool = require("to-bool");
 class ChessGame {
     constructor(id, chessServer) {
         this.chessServer = chessServer;
         this.moves = [];
         this.chess = new Chess();
         this.gameId = id;
-        this.globalStep = 1;
+        this.gameStep = 1;
         this.globalTurn = "w";
     }
     start = () => {
@@ -18,7 +16,7 @@ class ChessGame {
         this.performGolemCalculationsWrapper({
             turnId: this.globalTurn,
             gameId: this.gameId,
-            gameStep: this.globalStep,
+            gameStep: this.gameStep,
             chess: this.chess,
         });
     };
@@ -28,7 +26,8 @@ class ChessGame {
 
         data.taskId = gethTaskIdHash(data.gameId, data.gameStep);
 
-        this.chessServer.currentTurn(data);
+        const { chess, ...dataForGui } = data;
+        this.chessServer.currentTurn(dataForGui);
 
         this.moves[data.taskId] = {};
         this.moves[data.taskId].gameId = data.gameId;
@@ -42,14 +41,14 @@ class ChessGame {
 
     refreshMoves = () => {
         this.debugLog("refreshMoves", "");
-        chessServer.sendMovesList(this.moves);
+        this.chessServer.sendMovesList(this.moves);
     };
     calculationStarted = (data) => {
         this.debugLog("calculationStarted", data);
     };
     agreementCreated = (data) => {
         this.debugLog("agreementCreated", data);
-        ChessServer.agreementCreated(data);
+        this.chessServer.agreementCreated(data);
     };
     calculationRequested = (data) => {
         this.debugLog("calculationRequested", data);
@@ -58,29 +57,34 @@ class ChessGame {
         this.debugLog("computationStarted", data);
     };
     calculationCompleted = async (data) => {
+        const { bestmove } = data;
         this.debugLog("calculationCompleted", data);
-        if (this.moves[data.bestmove.hash].move !== undefined) return;
-        this.chess.move(data.bestmove.move, { sloppy: true });
+        if (this.moves[bestmove.hash].move !== undefined) return;
+        this.chess.move(bestmove.move, { sloppy: true });
 
-        this.moves[data.bestmove.hash].move = data.bestmove.move;
-        this.moves[data.bestmove.hash].vm_time = data.bestmove.time;
+        this.moves[bestmove.hash].move = bestmove.move;
+        this.moves[bestmove.hash].vm_time = bestmove.time;
 
-        RefreshMoves();
+        this.refreshMoves();
 
-        console.log(
-            "--------------------- // " +
-                data.bestmove.hash +
-                "  // docker image calculation (depth:" +
-                data.bestmove.depth +
-                ") time: " +
-                data.bestmove.time,
-        );
+        if (toBool(process.env.LOG_ENABLED_CHESS_GAME_COMPLETED_CALCULATION_DETAILS))
+            console.log(
+                "--------------------- // " +
+                    bestmove.hash +
+                    "  // docker image calculation (depth:" +
+                    bestmove.depth +
+                    ") time: " +
+                    bestmove.time,
+            );
 
-        this.chessServer.sendChessPosition(chess.fen());
+        this.chessServer.sendChessPosition(this.chess.fen());
 
-        this.chessServer.sendChessMove(data.bestmove);
+        this.chessServer.sendChessMove(bestmove);
 
-        console.log("====================\n\n" + chess.ascii() + "\n\n===================");
+        if (toBool(process.env.LOG_ENABLED_CHESS_GAME_ASCII_BOARD))
+            console.log(
+                "====================\n\n" + this.chess.ascii() + "\n\n===================",
+            );
 
         if (this.chess.game_over()) {
             console.log("!!!! game over !!!!!");
@@ -88,7 +92,7 @@ class ChessGame {
 
             if (this.chess.in_checkmate()) {
                 this.chessServer.gameFinished({
-                    winner: globalTurn === "w" ? "WHITE" : "BLACK",
+                    winner: this.globalTurn === "w" ? "WHITE" : "BLACK",
                     type: "winner",
                 });
             } else {
@@ -100,21 +104,23 @@ class ChessGame {
         }
 
         // next move
-        this.globalStep++;
-        this.globalTurn = globalTurn === "w" ? "b" : "w";
+        this.gameStep++;
+        this.globalTurn = this.globalTurn === "w" ? "b" : "w";
 
         while (true) {
             var success = await this.performGolemCalculationsWrapper({
-                turnId: globalTurn,
-                gameId: globalGameId,
-                gameStep: globalStep,
-                chess,
+                turnId: this.globalTurn,
+                gameId: this.gameId,
+                gameStep: this.gameStep,
+                chess: this.chess,
             });
             if (success) {
-                console.log("*** PerformGolemCalculations succeeded");
+                if (toBool(process.env.LOG_ENABLED_CHESS_GAME_COMPLETED_CALCULATION_WAS_SUCCESSFUL))
+                    console.log("*** PerformGolemCalculations succeeded");
                 break;
             } else {
-                console.log("*** PerformGolemCalculations failed... restarting");
+                if (toBool(process.env.LOG_ENABLED_CHESS_GAME_COMPLETED_CALCULATION_WAS_SUCCESSFUL))
+                    console.log("*** PerformGolemCalculations failed... restarting");
             }
         }
     };
@@ -123,7 +129,7 @@ class ChessGame {
         this.chessServer.computationFinished(data);
         this.moves[data.taskId].total_time = data.time;
 
-        RefreshMoves();
+        this.refreshMoves();
     };
     agreementConfirmed = (data) => {
         this.debugLog("agreementConfirmed", data);
@@ -151,7 +157,8 @@ class ChessGame {
     };
 
     debugLog = (functionName, data) => {
-        console.log(`>>>ChessGame::${functionName} ` + JSON.stringify(data, null, 4));
+        if (toBool(process.env.LOG_ENABLED_CHESS_GAME_FUNCTION_HEADER))
+            console.log(`>>>ChessGame::${functionName} ` + JSON.stringify(data, null, 4));
     };
 }
 

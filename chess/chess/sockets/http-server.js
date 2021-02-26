@@ -1,9 +1,10 @@
 const express = require("express");
 const https = require("https");
 const fs = require("fs");
+const toBool = require("to-bool");
 class HttpServer {
     constructor() {
-        const useSSL = process.env.USE_SSL;
+        const useSSL = toBool(process.env.USE_SSL);
         const port = process.env.HTTP_PORT;
 
         this.server = null;
