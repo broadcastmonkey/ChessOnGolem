@@ -27,5 +27,6 @@ jobs:
             cd ChessOnGolem
             git pull origin master
             git checkout master
+            cd chess
             yarn install
             pm2 reload all
