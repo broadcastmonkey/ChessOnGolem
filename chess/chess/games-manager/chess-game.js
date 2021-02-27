@@ -8,7 +8,7 @@ class ChessGame {
         this.moves = [];
         this.chess = new Chess();
         this.gameId = id;
-        this.stepId = 1;
+        this.stepId = 0;
         this.globalTurn = "w";
     }
     start = () => {
