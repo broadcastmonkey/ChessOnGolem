@@ -22,7 +22,7 @@ class ChessGame {
         });
     };
     performGolemCalculationsWrapper = async (data) => {
-        data.depth = data.turnId == "w" ? 3 : 6;
+        data.depth = data.turnId == "w" ? 10 : 10;
         const { chess, ...dataForGui } = data;
 
         this.debugLog("performGolemCalculationsWrapper", dataForGui);
@@ -86,12 +86,14 @@ class ChessGame {
 
         if (toBool(process.env.LOG_ENABLED_CHESS_GAME_ASCII_BOARD))
             console.log(
-                "====================\n\n" + this.chess.ascii() + "\n\n===================",
+                `====================\nGAME ${this.gameId} / step: ${
+                    this.stepId
+                }\n${this.chess.ascii()} \n\n===================`,
             );
 
         if (this.chess.game_over()) {
             console.log("!!!! game over !!!!!");
-            console.log(chess.ascii());
+            console.log(this.chess.ascii());
 
             if (this.chess.in_checkmate()) {
                 this.chessServer.gameFinished({
@@ -105,7 +107,6 @@ class ChessGame {
 
             return;
         }
-        return;
 
         // next move
         this.stepId++;

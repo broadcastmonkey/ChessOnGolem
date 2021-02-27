@@ -7,6 +7,7 @@ class GamesManager {
         this.currentGameId = 0;
         this.games = [];
         this.chessServer = chessServer;
+        this.total = 0;
         events.addListener("agreement_created", this.agreementCreated);
         events.addListener("offers_received", this.offersReceived);
         events.addListener("proposals_received", this.proposalsReceived);
@@ -19,10 +20,13 @@ class GamesManager {
         events.addListener("invoice_received", this.invoiceReceived);
         events.addListener("provider_failed", this.providerFailed);
     }
-
+    getRandomInt(max) {
+        return Math.floor(Math.random() * Math.floor(max));
+    }
     startSampleGame = () => {
         console.log("[i] starting new game ... ");
         this.currentGameId++;
+        //this.currentGameId = this.getRandomInt(1000);
         this.addGame(this.currentGameId)?.start();
     };
 
@@ -33,6 +37,7 @@ class GamesManager {
         }
         const game = new ChessGame(id, this.chessServer);
         this.games.push(game);
+        console.log("game size: " + this.games.length);
         return game;
     };
     getGame = (id) => {
@@ -40,6 +45,8 @@ class GamesManager {
     };
 
     calculationCompleted = async (data) => {
+        this.total++;
+        console.log("TOTAL : " + this.total);
         const { gameId } = data;
         this.debugLog("calculationCompleted", data);
         this.games.find((x) => x.gameId === gameId)?.calculationCompleted(data);

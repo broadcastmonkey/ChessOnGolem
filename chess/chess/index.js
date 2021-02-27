@@ -4,9 +4,8 @@ const httpServer = new (require("./sockets/http-server"))();
 const chessServer = new (require("./sockets/sockets"))(httpServer.server);
 const gamesManager = new (require("./games-manager/games-manager"))(chessServer);
 
-setTimeout(() => {
-    gamesManager.startSampleGame();
-}, 3000);
+setTimeout(() => {}, 3000);
+gamesManager.startSampleGame();
 
 //sends move and statistics to clients
 

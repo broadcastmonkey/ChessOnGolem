@@ -67,18 +67,12 @@ class WrappedEmitter {
     };
 
     handleComputationFinished = (event) => {
-        console.log("1");
         this.debugLog("handleComputationFinished", event);
-        console.log("2");
         if (this.finished === true) return;
-        console.log("3");
         this.finished = true;
         var hrend = process.hrtime(this.start_time);
-        console.log("4");
         const timeInMs = (hrend[0] * 1000000000 + hrend[1]) / 1000000;
-        console.log("5");
         this.emitEvent("computation_finished", { time: timeInMs });
-        console.log("computation finished");
     };
     handleComputationStarted = (event) => {
         this.debugLog("handleComputationStarted", event);
@@ -110,25 +104,16 @@ class WrappedEmitter {
         }
     };
     handleWorkerFinished = (event) => {
-        console.log("a");
         this.debugLog("handleWorkerFinished", event);
-        console.log("b");
         const provider_name = this.agreement_provider_name[event["agr_id"]];
-        console.log("c");
-        this.log(console.log(JSON.stringify(event, null, 4)));
-        console.log("d");
         if (event["exception"] !== null) {
             this.emitEvent("provider_failed", { providerName: provider_name });
-            console.log("e");
         } else {
-            console.log("f");
             this.log(" computation finished...");
             this.handleComputationFinished(event);
         }
-        console.log("g");
     };
     handleInvoiceReceived = (event) => {
-        console.log("invoice1");
         this.debugLog("handleInvoiceReceived", event);
         const provider_name = this.agreement_provider_name[event["agr_id"]];
         let cost = this.provider_cost[provider_name] || 0;
@@ -142,19 +127,15 @@ class WrappedEmitter {
         this.log(
             `Received an invoice from ${provider_name}. Amount: ${event["amount"]}; (so far: ${cost} from this provider).`,
         );
-        console.log("invoice9");
     };
     handleAgreementCreated = (event) => {
         this.debugLog("\n\n\n\n\n\n\nhandleAgreementCreated", event);
         let provider_name = event["provider_info"].name._value;
-
         if (!provider_name) {
             this.numbers++;
             provider_name = `provider-${numbers}`;
         }
-        console.log("name: " + provider_name);
         this.agreement_provider_name[event["agr_id"]] = provider_name;
-        console.log("2");
         this.log(`Agreement proposed to provider '${provider_name}'`);
         this.emitEvent("agreement_created", { providerName: provider_name });
     };

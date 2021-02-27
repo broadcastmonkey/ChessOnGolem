@@ -11,6 +11,7 @@ const events = require("./sockets/event-emitter");
 const ChessPath = require("./helpers/chess-temp-path-helper");
 var fs = require("fs");
 const { debuglog } = require("util");
+const { getTaskIdHash } = require("./helpers/get-task-hash-id");
 dayjs.extend(duration);
 
 const { asyncWith, logUtils, range } = utils;
@@ -24,22 +25,26 @@ LogMoveData = (data) =>
     `[turnID]: ${data.turnId}, [gameId]: ${data.gameId}, [stepId]: ${data.stepId}`;
 
 performGolemCalculations = async (moveData) => {
-    debugLog("performGolemCalculations", moveData);
+    const { chess, ...dataForLogger } = moveData;
+    debugLog("performGolemCalculations", dataForLogger);
     let subnetTag = process.env.GOLEM_SUBNET;
     debugLog(`Using subnet: ${subnetTag}`);
-    const { turnId, gameId, stepId, chess, depth, taskId } = moveData;
+    const { gameId, stepId, depth } = moveData;
+    const taskId = getTaskIdHash(gameId, stepId);
     var completed = false;
 
     events.emit("calculation_requested", { gameId, stepId });
 
-    paths = new ChessPath(gameId, stepId);
+    const paths = new ChessPath(gameId, stepId);
+    // console.log("&&&&&&&&&&&&&&&&&&&&&&&&&&&&");
+    // console.log(paths);
     const _package = await vm.repo({
         image_hash: repo_config.docker_id,
         min_mem_gib: repo_config.min_ram,
         min_storage_gib: repo_config.min_disk,
         min_cpu_count: repo_config.min_cpu,
     });
-
+    //console.log("####################" + paths.OutputFolder);
     if (!fs.existsSync(paths.OutputFolder)) {
         fs.mkdirSync(paths.OutputFolder, { recursive: true });
     }
@@ -96,10 +101,10 @@ performGolemCalculations = async (moveData) => {
     const Subtasks = range(0, 1, 1);
     const timeout = dayjs.duration({ minutes: 15 }).asMilliseconds();
 
-    var emitter = new WrappedEmitter(gameId, stepId);
-    var engine = await new Executor({
+    const emitter = new WrappedEmitter(gameId, stepId);
+    const engine = await new Executor({
         task_package: _package,
-        max_workers: 1,
+        max_workers: 13,
         timeout, //5 min to 30 min
         budget: "0.02",
         driver: "zksync",
@@ -111,10 +116,10 @@ performGolemCalculations = async (moveData) => {
     await asyncWith(engine, async (engine) => {
         for await (let subtask of engine.submit(
             worker,
-            Subtasks.map((frame) => new Task(frame)),
+            Subtasks.map((frame) => new Task(gameId * 10000 + stepId)),
         )) {
             if (fs.existsSync(subtask.result())) {
-                var bestmove = ExtractBestMove(fs.readFileSync(subtask.result(), "utf8"));
+                const bestmove = ExtractBestMove(fs.readFileSync(subtask.result(), "utf8"));
                 debuglog(
                     "*** result =====> ",
                     bestmove.move + " time: " + bestmove.time + ", depth:" + bestmove.depth,
