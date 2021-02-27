@@ -6,7 +6,7 @@ class HttpServer {
     constructor() {
         const useSSL = toBool(process.env.USE_SSL);
         const port = process.env.HTTP_PORT;
-
+        const app = express();
         this.server = null;
         if (useSSL === true) {
             const privateKey = fs.readFileSync(process.env.SSL_PRIVATE_KEY_PATH);
@@ -23,7 +23,6 @@ class HttpServer {
                 console.log(`HTTPS Server running on port ${port}`);
             });
         } else {
-            const app = express();
             this.server = app.listen(port, () =>
                 console.log(`HTTP Server running on port ${port}...`),
             );
