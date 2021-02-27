@@ -29,6 +29,7 @@ jobs:
             git fetch --all
             git reset --hard origin/staging
             git checkout staging
+            cd chess
             yarn install
             pm2 reload all
           
