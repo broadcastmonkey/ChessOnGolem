@@ -81,6 +81,14 @@ class ChessSocketServer {
         this.debugLog("computationStarted", taskId);
         this.io.to("chess").emit("computationStarted", taskId);
     };
+    subscriptionCreated = (taskId) => {
+        this.debugLog("subscriptionCreated", taskId);
+        this.io.to("chess").emit("subscriptionCreated", taskId);
+    };
+    calculationRequested = (data) => {
+        this.debugLog("calculationRequested", data);
+        this.io.to("chess").emit("calculationRequested", data);
+    };
     sendMovesList = (moves) => {
         this.debugLog("sendMovesList", moves);
         this.io.to("chess").emit("movesRefreshed", moves);

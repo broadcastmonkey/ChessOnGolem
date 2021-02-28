@@ -54,6 +54,7 @@ class ChessGame {
     };
     calculationRequested = (data) => {
         this.debugLog("calculationRequested", data);
+        this.chessServer.calculationRequested(data);
     };
     computationStarted = (data) => {
         this.debugLog("computationStarted", data);
@@ -141,6 +142,10 @@ class ChessGame {
         const { stepId, providerName } = data;
         this.moves[stepId].worker = providerName;
         this.chessServer.agreementConfirmed(data);
+    };
+    subscriptionCreated = (data) => {
+        this.debugLog("subscriptionCreated", data);
+        this.chessServer.subscriptionCreated(data);
     };
     invoiceReceived = (data) => {
         this.debugLog("invoiceReceived", data);

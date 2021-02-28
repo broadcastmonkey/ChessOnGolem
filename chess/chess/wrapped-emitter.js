@@ -146,7 +146,11 @@ class WrappedEmitter {
         this.log(`Agreement confirmed by provider '${provider_name}'`);
         this.emitEvent("agreement_confirmed", { providerName: provider_name });
     };
+    handleSubscriptionCreated = (event) => {
+        this.debugLog("handleSubscriptionCreated", event);
 
+        this.emitEvent("subscription_created", {});
+    };
     Process = (event) => {
         if (this.ShouldReturn()) return;
 
@@ -172,6 +176,8 @@ class WrappedEmitter {
             this.handleAgreementCreated(event);
         } else if (eventName === events.AgreementConfirmed.name) {
             this.handleAgreementConfirmed(event);
+        } else if (eventName === events.SubscriptionCreated.name) {
+            this.handleSubscriptionCreated(event);
         }
     };
     emitEvent = (eventName, data) => {

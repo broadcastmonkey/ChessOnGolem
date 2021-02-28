@@ -6,17 +6,3 @@ const gamesManager = new (require("./games-manager/games-manager"))(chessServer)
 
 setTimeout(() => {}, 3000);
 gamesManager.startSampleGame();
-
-//sends move and statistics to clients
-
-// starts the game with offset so all gui clients have time to reconnect
-
-/*
-    PerformGolemCalculationsWrapper({
-        turnId: globalTurn,
-        gameId: globalGameId,
-        gameStep: globalStep,
-        chess,
-    });
-}, 5000);
-*/

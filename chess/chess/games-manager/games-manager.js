@@ -19,6 +19,7 @@ class GamesManager {
         events.addListener("computation_finished", this.computationFinished);
         events.addListener("invoice_received", this.invoiceReceived);
         events.addListener("provider_failed", this.providerFailed);
+        events.addListener("subscription_created", this.subscriptionCreated);
     }
     getRandomInt(max) {
         return Math.floor(Math.random() * Math.floor(max));
@@ -86,6 +87,11 @@ class GamesManager {
         const { gameId } = data;
         this.debugLog("providerFailed", data);
         this.games.find((x) => x.gameId === gameId)?.providerFailed(data);
+    };
+    subscriptionCreated = (data) => {
+        const { gameId } = data;
+        this.debugLog("subscriptionCreated", data);
+        this.games.find((x) => x.gameId === gameId)?.subscriptionCreated(data);
     };
     invoiceReceived = (data) => {
         const { gameId } = data;
