@@ -84,7 +84,8 @@ class WrappedEmitter {
     };
     handleReceivedProposals = (event) => {
         this.debugLog("handleReceivedProposals", event);
-        this.received_proposals[event.prop_id];
+
+        this.received_proposals.add(event.prop_id);
 
         this.emitEvent("proposals_received", { proposalsCount: this.received_proposals.size });
     };
@@ -148,8 +149,11 @@ class WrappedEmitter {
     };
     handleSubscriptionCreated = (event) => {
         this.debugLog("handleSubscriptionCreated", event);
-
         this.emitEvent("subscription_created", {});
+    };
+    handleScriptSent = (event) => {
+        this.debugLog("handleScriptSent", event);
+        this.emitEvent("script_sent", {});
     };
     Process = (event) => {
         if (this.ShouldReturn()) return;
@@ -178,6 +182,8 @@ class WrappedEmitter {
             this.handleAgreementConfirmed(event);
         } else if (eventName === events.SubscriptionCreated.name) {
             this.handleSubscriptionCreated(event);
+        } else if (eventName === events.ScriptSent.name) {
+            this.handleScriptSent(event);
         }
     };
     emitEvent = (eventName, data) => {

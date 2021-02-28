@@ -8,18 +8,19 @@ class GamesManager {
         this.games = [];
         this.chessServer = chessServer;
         this.total = 0;
-        events.addListener("agreement_created", this.agreementCreated);
-        events.addListener("offers_received", this.offersReceived);
-        events.addListener("proposals_received", this.proposalsReceived);
-        events.addListener("agreement_confirmed", this.agreementConfirmed);
         events.addListener("calculation_requested", this.calculationRequested);
+        events.addListener("subscription_created", this.subscriptionCreated);
+        events.addListener("proposals_received", this.proposalsReceived);
+        events.addListener("offers_received", this.offersReceived);
+        events.addListener("agreement_created", this.agreementCreated);
+        events.addListener("agreement_confirmed", this.agreementConfirmed);
         events.addListener("computation_started", this.computationStarted);
         events.addListener("calculation_started", this.calculationStarted);
         events.addListener("calculation_completed", this.calculationCompleted);
         events.addListener("computation_finished", this.computationFinished);
         events.addListener("invoice_received", this.invoiceReceived);
         events.addListener("provider_failed", this.providerFailed);
-        events.addListener("subscription_created", this.subscriptionCreated);
+        events.addListener("script_sent", this.scriptSent);
     }
     getRandomInt(max) {
         return Math.floor(Math.random() * Math.floor(max));
@@ -82,7 +83,11 @@ class GamesManager {
         this.debugLog("calculationRequested", data);
         this.games.find((x) => x.gameId === gameId)?.calculationRequested(data);
     };
-
+    scriptSent = (data) => {
+        const { gameId } = data;
+        this.debugLog("scriptSent", data);
+        this.games.find((x) => x.gameId === gameId)?.scriptSent(data);
+    };
     providerFailed = (data) => {
         const { gameId } = data;
         this.debugLog("providerFailed", data);

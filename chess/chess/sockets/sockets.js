@@ -89,6 +89,10 @@ class ChessSocketServer {
         this.debugLog("calculationRequested", data);
         this.io.to("chess").emit("calculationRequested", data);
     };
+    scriptSent = (data) => {
+        this.debugLog("scriptSent", data);
+        this.io.to("chess").emit("scriptSent", data);
+    };
     sendMovesList = (moves) => {
         this.debugLog("sendMovesList", moves);
         this.io.to("chess").emit("movesRefreshed", moves);

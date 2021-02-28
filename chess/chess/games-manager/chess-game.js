@@ -57,6 +57,8 @@ class ChessGame {
         this.chessServer.calculationRequested(data);
     };
     computationStarted = (data) => {
+        console.log("started!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+        this.chessServer.computationStarted(data);
         this.debugLog("computationStarted", data);
     };
     calculationCompleted = async (data) => {
@@ -146,6 +148,10 @@ class ChessGame {
     subscriptionCreated = (data) => {
         this.debugLog("subscriptionCreated", data);
         this.chessServer.subscriptionCreated(data);
+    };
+    scriptSent = (data) => {
+        this.debugLog("scriptSent", data);
+        this.chessServer.scriptSent(data);
     };
     invoiceReceived = (data) => {
         this.debugLog("invoiceReceived", data);
