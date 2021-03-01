@@ -4,11 +4,11 @@ const fs = require("fs");
 const toBool = require("to-bool");
 class HttpServer {
     constructor() {
-        const useSSL = toBool(process.env.USE_SSL);
+        this.useSSL = toBool(process.env.USE_SSL);
         const port = process.env.HTTP_PORT;
         const app = express();
         this.server = null;
-        if (useSSL === true) {
+        if (this.useSSL === true) {
             const privateKey = fs.readFileSync(process.env.SSL_PRIVATE_KEY_PATH);
             const certificate = fs.readFileSync(process.env.SSL_CERTIFICATE_PATH);
             const ca = fs.readFileSync(process.env.SSL_CA_PATH);
@@ -27,32 +27,16 @@ class HttpServer {
                 console.log(`HTTP Server running on port ${port}...`),
             );
         }
-
-        if (process.platform === "win32") {
-            var rl = require("readline").createInterface({
-                input: process.stdin,
-                output: process.stdout,
-            });
-
-            rl.on("SIGINT", function () {
-                process.emit("SIGINT");
-            });
-        }
-
-        process.on("SIGINT", () => {
-            console.log("Caught interrupt signal... closing socket");
-
-            if (useSSL === true) {
-                this.server.close();
-                console.log("ssl server closed");
-            } else {
-                this.server.close();
-                console.log("server closed");
-            }
-            // if (i_should_exit)
-            process.exit();
-        });
     }
+    close = () => {
+        if (this.useSSL === true) {
+            this.server.close();
+            console.log("ssl server closed");
+        } else {
+            this.server.close();
+            console.log("server closed");
+        }
+    };
 }
 
 module.exports = HttpServer;

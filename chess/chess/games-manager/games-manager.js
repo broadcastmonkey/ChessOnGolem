@@ -8,6 +8,7 @@ class GamesManager {
         this.games = [];
         this.chessServer = chessServer;
         this.total = 0;
+        this.active = true;
         events.addListener("calculation_requested", this.calculationRequested);
         events.addListener("subscription_created", this.subscriptionCreated);
         events.addListener("proposals_received", this.proposalsReceived);
@@ -122,6 +123,11 @@ class GamesManager {
     debugLog = (functionName, data) => {
         if (toBool(process.env.LOG_ENABLED_GAMES_MANAGER))
             console.log(`>>GamesManager::${functionName} ` + JSON.stringify(data, null, 4));
+    };
+    close = () => {
+        console.log("shutting down games manager ...");
+        this.active = false;
+        this.games.forEach((x) => x.close());
     };
 }
 
