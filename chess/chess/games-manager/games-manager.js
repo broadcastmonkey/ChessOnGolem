@@ -1,6 +1,7 @@
 const ChessGame = require("./chess-game");
 const events = require("../sockets/event-emitter");
 const toBool = require("to-bool");
+const { GameType } = require("./enums");
 events.setMaxListeners(100);
 class GamesManager {
     constructor(chessServer) {
@@ -22,29 +23,45 @@ class GamesManager {
         events.addListener("invoice_received", this.invoiceReceived);
         events.addListener("provider_failed", this.providerFailed);
         events.addListener("script_sent", this.scriptSent);
+        events.addListener("new_game_request", this.newGameRequest);
+        events.addListener("new_move_request", this.newMoveRequest);
     }
     getRandomInt(max) {
         return Math.floor(Math.random() * Math.floor(max));
     }
     startSampleGame = () => {
         console.log("[i] starting new game ... ");
-        this.currentGameId++;
+
         //this.currentGameId = this.getRandomInt(1000);
-        this.addGame(this.currentGameId)?.start();
+        this.addGame(GameType.GOLEM_VS_GOLEM)?.start();
     };
 
-    addGame = (id) => {
-        if (this.getGame(id) !== undefined) {
-            console.log(`!!! game with id: ${id} already exists`);
+    addGame = (gameType) => {
+        this.currentGameId++;
+        if (this.getGame(this.currentGameId) !== undefined) {
+            console.log(`!!! game with id: ${this.currentGameId} already exists`);
             return undefined;
         }
-        const game = new ChessGame(id, this.chessServer);
+        const game = new ChessGame(this.currentGameId, this.chessServer, gameType);
         this.games.push(game);
-        console.log("game size: " + this.games.length);
+
         return game;
     };
     getGame = (id) => {
         return this.games.find((x) => x.gameId === id);
+    };
+    newMoveRequest = async (data) => {
+        const { gameId } = data;
+        this.debugLog("calculationCompleted", data);
+        this.games
+            .find((x) => x.gameId === gameId && x.gameType === GameType.PLAYER_VS_GOLEM)
+            ?.newMoveRequest(data);
+    };
+    newGameRequest = async (data) => {
+        this.debugLog("newGameRequest", data);
+        const game = this.addGame(GameType.PLAYER_VS_GOLEM);
+        this.chessServer.newGameCreated(data.socket, game.gameId);
+        game.start();
     };
 
     calculationCompleted = async (data) => {

@@ -1,12 +1,13 @@
 const socketIO = require("socket.io"); // sock
 const toBool = require("to-bool");
 const { getTaskIdHash } = require("../helpers/get-task-hash-id");
+const eventsEmitter = require("./event-emitter");
 class ChessSocketServer {
     users = [];
 
     lastPosition = "start";
     lastMoveData = null;
-    lastMoves = {};
+    lastMoves = { gameId: -1, movesData: {} };
 
     gameFinishedWinner = "";
     gameFinishedType = "";
@@ -43,18 +44,33 @@ class ChessSocketServer {
                 this.handleJoin(socket, param, callback);
             });
 
-            socket.on("sendEvent", (message, callback) => {
+            /*socket.on("sendEvent", (message, callback) => {
                 handleEventMessage(socket, message, callback);
+            });*/
+            socket.on("newGameRequest", (data, callback) => {
+                this.handleNewGameRequest(socket, data, callback);
+            });
+            socket.on("newMove", (data, callback) => {
+                this.handleNewMove(socket, data, callback);
             });
             socket.on("disconnect", () => {
                 this.handleDisconnect(socket);
             });
-            socket.on("adminEvent", (message, callback) => {
+            /*socket.on("adminEvent", (message, callback) => {
                 this.handleAdminEventMessage(socket, message, callback);
-            });
+            });*/
         });
     }
-
+    handleNewMove = async (socket, data, callback) => {
+        if (callback) callback({ msg: "new_move_request" }); // obj: successfuly joined ?
+        eventsEmitter.emit("new_move_request", { socket });
+        console.log("new move request");
+    };
+    handleNewGameRequest = async (socket, data, callback) => {
+        if (callback) callback({ msg: "new_game_request" }); // obj: successfuly joined ?
+        eventsEmitter.emit("new_game_request", { socket });
+        console.log("new game request");
+    };
     emitEvent(eventName, data) {
         if (data.gameId !== undefined && data.stepId !== undefined) {
             data = { ...data, taskId: getTaskIdHash(data.gameId, data.stepId) };
@@ -66,6 +82,11 @@ class ChessSocketServer {
                 `> sending to gui  ${eventName}   with payload ` + JSON.stringify(data, null, 4),
             );
     }
+    newGameCreated = (socket, id) => {
+        this.debugLog("newGameCreated", { id });
+        socket.emit("newGameCreated", { gameId: id });
+        console.log("succes?");
+    };
     currentTurn = (turnData) => {
         this.debugLog("currentTurn", turnData);
         this.lastMoveData = turnData;
@@ -136,10 +157,10 @@ class ChessSocketServer {
         this.io.to("chess").emit("moveEvent", move);
     };
 
-    sendChessPosition = (fen) => {
-        this.debugLog("sendChessPosition", fen);
-        this.lastPosition = fen;
-        this.io.to("chess").emit("positionEvent", { fen });
+    sendChessPosition = (data) => {
+        this.debugLog("sendChessPosition", data);
+        this.lastPosition = data;
+        this.io.to("chess").emit("positionEvent", data);
     };
     handleAdminEventMessage = (socket, message, callback) => {
         console.log("adminEvent", message);
