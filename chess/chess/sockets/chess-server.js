@@ -186,7 +186,7 @@ class ChessSocketServer {
 
         console.log("user added", user);
         socket.join("chess");
-        this.io.to("chess").emit("positionEvent", { fen: this.lastPosition });
+        this.io.to("chess").emit("positionEvent", this.lastPosition);
         if (this.lastMoveData !== null)
             this.io.to("chess").emit("currentTurnEvent", this.lastMoveData);
         this.io.to("chess").emit("movesRefreshed", this.lastMoves);
