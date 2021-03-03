@@ -68,7 +68,9 @@ class ChessGame {
                 this.globalTurn === PlayerType.WHITE ? PlayerType.BLACK : PlayerType.WHITE;
             console.log(this.gameType);
 
-            this.turnType = this.turnType === TurnType.PLAYER ? TurnType.GOLEM : TurnType.PLAYER;
+            if (this.gameType === GameType.PLAYER_VS_GOLEM)
+                this.turnType =
+                    this.turnType === TurnType.PLAYER ? TurnType.GOLEM : TurnType.PLAYER;
 
             if (playerType === TurnType.GOLEM && this.gameType === GameType.PLAYER_VS_GOLEM) {
                 console.log("updating turn data ... ");
