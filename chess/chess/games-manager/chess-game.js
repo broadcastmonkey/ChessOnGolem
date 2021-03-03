@@ -59,7 +59,67 @@ class ChessGame {
 
         return await performGolemCalculations(data);
     };
-    newMoveRequest = () => {};
+    startNewGolemCalculation = async (move, playerType) => {
+        const status = this.PerformMoveAndCheckForGameOver(move);
+        console.log("Status: " + status);
+        if (status === MoveStatus.GAME_CONTINUES) {
+            this.stepId++;
+            this.globalTurn =
+                this.globalTurn === PlayerType.WHITE ? PlayerType.BLACK : PlayerType.WHITE;
+            console.log(this.gameType);
+
+            this.turnType = this.turnType === TurnType.PLAYER ? TurnType.GOLEM : TurnType.PLAYER;
+
+            if (playerType === TurnType.GOLEM && this.gameType === GameType.PLAYER_VS_GOLEM) {
+                console.log("updating turn data ... ");
+                this.chessServer.currentTurn({
+                    gameId: this.gameId,
+                    stepId: this.stepId,
+                    turnId: this.globalTurn,
+                    depth: 0,
+                });
+            }
+            if (this.gameType === GameType.GOLEM_VS_GOLEM || playerType === TurnType.PLAYER) {
+                while (true) {
+                    var success = await this.performGolemCalculationsWrapper({
+                        turnId: this.globalTurn,
+                        gameId: this.gameId,
+                        stepId: this.stepId,
+                        chess: this.chess,
+                    });
+                    if (success) {
+                        if (
+                            toBool(
+                                process.env
+                                    .LOG_ENABLED_CHESS_GAME_COMPLETED_CALCULATION_WAS_SUCCESSFUL,
+                            )
+                        )
+                            console.log("*** PerformGolemCalculations succeeded");
+                        break;
+                    } else {
+                        if (
+                            toBool(
+                                process.env
+                                    .LOG_ENABLED_CHESS_GAME_COMPLETED_CALCULATION_WAS_SUCCESSFUL,
+                            )
+                        )
+                            console.log("*** PerformGolemCalculations failed... restarting");
+                    }
+                }
+            }
+        }
+    };
+    newMoveRequest = (data) => {
+        console.log("here");
+        this.moves[this.stepId] = {};
+        this.moves[this.stepId].gameId = this.gameId;
+        this.moves[this.stepId].stepId = this.stepId;
+        this.moves[this.stepId].depth = 0;
+        this.moves[this.stepId].turn = this.globalTurn;
+        this.moves[this.stepId].playerType = TurnType.GOLEM;
+
+        this.startNewGolemCalculation(data.move, TurnType.PLAYER);
+    };
     refreshMoves = () => {
         this.debugLog("refreshMoves", "");
         this.chessServer.sendMovesList({
@@ -84,6 +144,8 @@ class ChessGame {
         this.debugLog("computationStarted", data);
     };
     PerformMoveAndCheckForGameOver = (move) => {
+        console.log("turn type: " + this.turnType);
+        this.debugLog("PerformMoveAndCheckForGameOver", move);
         let result = null;
         if (this.turnType === TurnType.GOLEM) {
             result = this.chess.move(move, { sloppy: true });
@@ -94,6 +156,7 @@ class ChessGame {
         }
         if (result === null) {
             return MoveStatus.ERROR;
+            console.log("!!! ERROR ! ");
         }
         this.refreshMoves();
         this.chessServer.sendChessPosition({
@@ -153,42 +216,7 @@ class ChessGame {
             );*/
 
         // next move
-        const status = this.PerformMoveAndCheckForGameOver(move);
-        console.log("Status: " + status);
-        if (status === MoveStatus.GAME_CONTINUES) {
-            this.stepId++;
-            this.globalTurn =
-                this.globalTurn === PlayerType.WHITE ? PlayerType.BLACK : PlayerType.WHITE;
-            console.log(this.gameType);
-            if (this.gameType === GameType.GOLEM_VS_GOLEM) {
-                while (true) {
-                    var success = await this.performGolemCalculationsWrapper({
-                        turnId: this.globalTurn,
-                        gameId: this.gameId,
-                        stepId: this.stepId,
-                        chess: this.chess,
-                    });
-                    if (success) {
-                        if (
-                            toBool(
-                                process.env
-                                    .LOG_ENABLED_CHESS_GAME_COMPLETED_CALCULATION_WAS_SUCCESSFUL,
-                            )
-                        )
-                            console.log("*** PerformGolemCalculations succeeded");
-                        break;
-                    } else {
-                        if (
-                            toBool(
-                                process.env
-                                    .LOG_ENABLED_CHESS_GAME_COMPLETED_CALCULATION_WAS_SUCCESSFUL,
-                            )
-                        )
-                            console.log("*** PerformGolemCalculations failed... restarting");
-                    }
-                }
-            }
-        }
+        this.startNewGolemCalculation(move, TurnType.GOLEM);
     };
     computationFinished = (data) => {
         this.debugLog("computationFinished", data);

@@ -63,7 +63,7 @@ class ChessSocketServer {
     }
     handleNewMove = async (socket, data, callback) => {
         if (callback) callback({ msg: "new_move_request" }); // obj: successfuly joined ?
-        eventsEmitter.emit("new_move_request", { socket });
+        eventsEmitter.emit("new_move_request", data);
         console.log("new move request");
     };
     handleNewGameRequest = async (socket, data, callback) => {

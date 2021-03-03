@@ -50,15 +50,15 @@ class GamesManager {
     getGame = (id) => {
         return this.games.find((x) => x.gameId === id);
     };
-    newMoveRequest = async (data) => {
+    newMoveRequest = (data) => {
         const { gameId } = data;
-        this.debugLog("calculationCompleted", data);
+        this.debugLog("newMoveRequest", data);
         this.games
             .find((x) => x.gameId === gameId && x.gameType === GameType.PLAYER_VS_GOLEM)
             ?.newMoveRequest(data);
     };
-    newGameRequest = async (data) => {
-        this.debugLog("newGameRequest", data);
+    newGameRequest = (data) => {
+        this.debugLog("newGameRequest", {});
         const game = this.addGame(GameType.PLAYER_VS_GOLEM);
         this.chessServer.newGameCreated(data.socket, game.gameId);
         game.start();
@@ -66,7 +66,6 @@ class GamesManager {
 
     calculationCompleted = async (data) => {
         this.total++;
-        console.log("TOTAL : " + this.total);
         const { gameId } = data;
         this.debugLog("calculationCompleted", data);
         this.games.find((x) => x.gameId === gameId)?.calculationCompleted(data);
