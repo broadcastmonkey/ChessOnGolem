@@ -5,7 +5,7 @@ const chessServer = new (require("./sockets/chess-server"))(httpServer.server);
 const gamesManager = new (require("./games-manager/games-manager"))(chessServer);
 require("./sockets/winsigint");
 //setTimeout(() => {}, 3000);
-//gamesManager.startSampleGame();
+gamesManager.startSampleGame();
 
 process.on("SIGINT", () => {
     console.log("Caught interrupt signal... closing socket");
