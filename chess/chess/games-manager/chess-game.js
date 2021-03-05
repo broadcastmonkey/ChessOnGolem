@@ -3,29 +3,37 @@ const { Chess } = require("chess.js");
 const ChessTempPathHelper = require("../helpers/chess-temp-path-helper");
 const toBool = require("to-bool");
 const fs = require("fs");
-const { GameType, PlayerType, TurnType, StatusType, MoveStatus } = require("./enums");
+const { GameType, PlayerType, TurnType, StatusType, MoveStatus, WinnerType } = require("./enums");
+const { ComposedStorageProvider } = require("yajsapi/dist/storage");
 
 class ChessGame {
     constructor(id, chessServer, gameType) {
         this.active = true;
         this.chessServer = chessServer;
-        this.moves = [];
         this.chess = new Chess();
+        this.paths = new ChessTempPathHelper(id, 0);
+        this.calculated = false;
+        this.moves = [];
         this.gameId = id;
         this.stepId = 0;
         this.globalTurn = PlayerType.WHITE;
-        this.paths = new ChessTempPathHelper(this.gameId, 0);
         this.isGameFinished = false;
-        //this.open(this.gameId);
         this.gameType = gameType;
         this.gameStatus = StatusType.INITIATED;
+        this.winner = "";
+        this.winnerType = "";
         //assumes player always starts game
         this.turnType = gameType === GameType.GOLEM_VS_GOLEM ? TurnType.GOLEM : TurnType.PLAYER;
     }
     start = () => {
-        this.gameStatus = StatusType.STARTED;
-        console.log("starting pos: \n" + this.chess.ascii());
+        if (this.isGameFinished) {
+            console.log(`loaded game with id: ${this.gameId} already finished...`);
+            return;
+        }
+        if (this.stepId > 0) console.log("resuming game : " + this.gameId);
+        else console.log("starting game : " + this.gameId);
 
+        this.gameStatus = StatusType.STARTED;
         if (this.gameType == GameType.GOLEM_VS_GOLEM) {
             this.performGolemCalculationsWrapper({
                 turnId: this.globalTurn,
@@ -45,18 +53,13 @@ class ChessGame {
 
         this.debugLog("performGolemCalculationsWrapper", dataForGui);
         const { gameId, stepId, turnId, depth } = data;
-
-        //
-
         this.moves[stepId] = {};
         this.moves[stepId].gameId = gameId;
         this.moves[stepId].stepId = stepId;
         this.moves[stepId].depth = depth;
         this.moves[stepId].turn = turnId;
         this.moves[stepId].playerType = TurnType.GOLEM;
-
         this.chessServer.currentTurn(dataForGui);
-
         return await performGolemCalculations(data);
     };
     startNewGolemCalculation = async (move, playerType) => {
@@ -89,27 +92,17 @@ class ChessGame {
                         stepId: this.stepId,
                         chess: this.chess,
                     });
-                    if (success) {
-                        if (
-                            toBool(
-                                process.env
-                                    .LOG_ENABLED_CHESS_GAME_COMPLETED_CALCULATION_WAS_SUCCESSFUL,
-                            )
-                        )
-                            console.log("*** PerformGolemCalculations succeeded");
-                        break;
-                    } else {
-                        if (
-                            toBool(
-                                process.env
-                                    .LOG_ENABLED_CHESS_GAME_COMPLETED_CALCULATION_WAS_SUCCESSFUL,
-                            )
-                        )
-                            console.log("*** PerformGolemCalculations failed... restarting");
-                    }
+                    this.displayGolemCalculationStatus(success);
+                    if (success) break;
                 }
             }
         }
+    };
+    displayGolemCalculationStatus = (success) => {
+        if (!toBool(process.env.LOG_ENABLED_CHESS_GAME_COMPLETED_CALCULATION_WAS_SUCCESSFUL))
+            return;
+        if (success) console.log("*** PerformGolemCalculations succeeded");
+        else console.log("*** PerformGolemCalculations failed... restarting");
     };
     newMoveRequest = (data) => {
         console.log("here");
@@ -145,20 +138,22 @@ class ChessGame {
         this.chessServer.computationStarted(data);
         this.debugLog("computationStarted", data);
     };
+    displayCurrentChessBoard = () => {
+        if (toBool(process.env.LOG_ENABLED_CHESS_GAME_ASCII_BOARD))
+            console.log(
+                `\nGameId: ${this.gameId} / step: ${this.stepId}\n${this.chess.ascii()} \n\n`,
+            );
+    };
     PerformMoveAndCheckForGameOver = (move) => {
         console.log("turn type: " + this.turnType);
         this.debugLog("PerformMoveAndCheckForGameOver", move);
-        let result = null;
-        if (this.turnType === TurnType.GOLEM) {
-            result = this.chess.move(move, { sloppy: true });
-            this.moves[this.stepId].move = move;
-        } else {
-            result = this.chess.move(move, { sloppy: true });
-            this.moves[this.stepId].move = move.from + ":" + move.to;
-        }
+        const result = this.chess.move(move, { sloppy: true });
+        if (this.turnType === TurnType.GOLEM) this.moves[this.stepId].move = move;
+        else this.moves[this.stepId].move = move.from + ":" + move.to;
+        this.moves[this.stepId].calculated = true;
         if (result === null) {
-            return MoveStatus.ERROR;
             console.log("!!! ERROR ! ");
+            return MoveStatus.ERROR;
         }
         this.refreshMoves();
         this.chessServer.sendChessPosition({
@@ -172,33 +167,26 @@ class ChessGame {
             move: this.moves[this.stepId].move,
         });
 
-        if (toBool(process.env.LOG_ENABLED_CHESS_GAME_ASCII_BOARD))
-            console.log(
-                `\nGameId: ${this.gameId} / step: ${this.stepId}\n${this.chess.ascii()} \n\n`,
-            );
-
+        this.displayCurrentChessBoard();
         if (this.chess.game_over()) {
             this.gameStatus = StatusType.FINISHED;
-            console.log("!!!! game over !!!!!");
-            console.log(this.chess.ascii());
             this.moves[this.stepId].isGameFinished = true;
             if (this.chess.in_checkmate()) {
-                this.moves[this.stepId].winner_type = "checkmate";
+                this.moves[this.stepId].winnerType = WinnerType.CHECKMATE;
                 this.moves[this.stepId].winner = this.globalTurn;
-                this.chessServer.gameFinished({
-                    winner: this.globalTurn,
-                    type: "winner",
-                });
             } else {
+                this.moves[this.stepId].winnerType = WinnerType.DRAW;
                 this.moves[this.stepId].winner = "";
-                this.moves[this.stepId].winner_type = "draw";
-                //chess.reset();
-                this.chessServer.gameFinished({ winner: "", type: "draw" });
             }
+            console.log("!!!! game over !!!!! / " + this.moves[this.stepId].winnerType);
+            console.log(this.chess.ascii());
+            this.chessServer.gameFinished({
+                winner: this.moves[this.stepId].winner,
+                type: this.moves[this.stepId].winnerType,
+            });
             return MoveStatus.GAME_FINISHED;
-        } else {
-            return MoveStatus.GAME_CONTINUES;
         }
+        return MoveStatus.GAME_CONTINUES;
     };
     calculationCompleted = async (data) => {
         if (!this.active) {
@@ -208,16 +196,7 @@ class ChessGame {
         const { bestmove, stepId } = data;
         const { move, time, depth } = bestmove;
         this.debugLog("calculationCompleted", data);
-        //if (this.moves[stepId].move !== undefined) return;
-
         this.moves[stepId].vm_time = time;
-
-        /*if (toBool(process.env.LOG_ENABLED_CHESS_GAME_COMPLETED_CALCULATION_DETAILS))
-            console.log(
-                `GameId:${this.gameID} StepId: ${this.stepId} depth: ${depth} time: ${time}`,
-            );*/
-
-        // next move
         this.startNewGolemCalculation(move, TurnType.GOLEM);
     };
     computationFinished = (data) => {
@@ -278,37 +257,68 @@ class ChessGame {
     };
     close = () => {
         this.active = false;
-        this.save();
+        if (this.stepId > 1) this.saveToFile();
     };
-    save = () => {
+
+    getGameObject = () => {
+        return {
+            gameId: this.gameId,
+            stepId: this.stepId,
+            globalTurn: this.globalTurn,
+            isGameFinished: this.isGameFinished,
+            gameType: this.gameType,
+            gameStatus: this.gameStatus,
+            moves: this.moves,
+            winner: this.winner,
+            winnerType: this.winnerType,
+            turnType: this.turnType,
+            calculated: this.calculated,
+            fen: this.chess.fen(),
+        };
+    };
+    saveToFile = () => {
         var gameFilePath = this.paths.GameFile;
         if (!fs.existsSync(this.paths.GamesFolder)) {
             fs.mkdirSync(this.paths.GamesFolder, { recursive: true });
         }
-        let data = JSON.stringify({ moves: this.moves, fen: this.chess.fen() });
+        let data = JSON.stringify(this.getGameObject());
         fs.writeFileSync(gameFilePath, data);
         console.log(`game ${this.gameId} saved.`);
     };
-    open = () => {
+
+    loadFromObject = (data) => {
+        this.gameId = data.gameId;
+        this.stepId = data.stepId;
+        this.globalTurn = data.globalTurn;
+        this.isGameFinished = data.isGameFinished;
+        this.gameType = data.gameType;
+        this.gameStatus = data.gameStatus;
+        this.moves = data.moves;
+        this.calculated = data.calculated;
+        this.winner = data.winner;
+        this.winnerType = data.winnerType;
+        this.turnType = data.turnType;
+        this.chess.load(data.fen);
+    };
+
+    loadFromFile = () => {
         if (fs.existsSync(this.paths.GameFile)) {
             let rawdata = fs.readFileSync(this.paths.GameFile);
             const data = JSON.parse(rawdata);
-            this.moves = data.moves;
-            this.chess.load(data.fen);
+            this.loadFromObject(data);
             if (this.moves === undefined || this.moves.length == 0) {
-                return;
+                return false;
             }
             let lastMove = this.moves[this.moves.length - 1];
-            if (lastMove.isGameFinished === true) {
-                this.isGameFinished = true;
-                this.winner = lastMove.winner;
-                this.winner_type = lastMove.winner_type;
-            } else {
+            if (this.calculated) {
+                console.log("last step calculated, starting new step");
                 this.turnId =
                     lastMove.turnId === PlayerType.WHITE ? PlayerType.BLACK : PlayerType.WHITE;
                 this.stepId = lastMove.stepId + 1;
             }
             console.log(`game ${this.gameId} loaded from file.`);
+        } else {
+            console.log("file doesn't exist");
         }
     };
 }

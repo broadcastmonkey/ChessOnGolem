@@ -1,6 +1,7 @@
 const GameType = {
     GOLEM_VS_GOLEM: "Golem vs Golem",
     PLAYER_VS_GOLEM: "Player vs Golem",
+    UNKNOWN: "not a game",
 };
 const TurnType = {
     GOLEM: "Golem",
@@ -26,10 +27,17 @@ const MoveStatus = {
     GAME_FINISHED: "GAME FINISHED",
 };
 
+const WinnerType = {
+    DRAW: "draw",
+    CHECKMATE: "checkmate",
+    NONE: "",
+};
+
 module.exports = {
     GameType,
     TurnType,
     PlayerType,
     StatusType,
     MoveStatus,
+    WinnerType,
 };

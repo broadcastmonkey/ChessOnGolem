@@ -2,6 +2,8 @@ const ChessGame = require("./chess-game");
 const events = require("../sockets/event-emitter");
 const toBool = require("to-bool");
 const { GameType } = require("./enums");
+const fs = require("fs");
+const ChessTempPathHelper = require("../helpers/chess-temp-path-helper");
 events.setMaxListeners(100);
 class GamesManager {
     constructor(chessServer) {
@@ -10,6 +12,7 @@ class GamesManager {
         this.chessServer = chessServer;
         this.total = 0;
         this.active = true;
+
         events.addListener("calculation_requested", this.calculationRequested);
         events.addListener("subscription_created", this.subscriptionCreated);
         events.addListener("proposals_received", this.proposalsReceived);
@@ -26,6 +29,31 @@ class GamesManager {
         events.addListener("new_game_request", this.newGameRequest);
         events.addListener("new_move_request", this.newMoveRequest);
     }
+    getGamesInProgressCount = () => {
+        return this.games.filter((x) => x.isGameFinished === false).length;
+    };
+    loadGamesFromDisk = () => {
+        console.log("loading games from disk...");
+        const paths = new ChessTempPathHelper(0, 0);
+        if (fs.existsSync(paths.GamesFolder)) {
+            const filenames = fs.readdirSync(paths.GamesFolder);
+            console.log("filenames");
+            console.log(filenames);
+            filenames
+                .filter((x) => x.includes("game_") && x.includes(".json"))
+                .forEach((x) => {
+                    let id = parseInt(
+                        x.substring(x.lastIndexOf("game_") + 5, x.lastIndexOf(".json")),
+                    );
+                    console.log("loading file : " + x);
+                    console.log("id: " + id);
+                    let game = this.addGame(GameType.UNKNOWN, { id });
+                    game.loadFromFile();
+                    game.start();
+                    this.currentGameId = Math.max(this.currentGameId, id + 1);
+                });
+        }
+    };
     getRandomInt(max) {
         return Math.floor(Math.random() * Math.floor(max));
     }
@@ -36,13 +64,18 @@ class GamesManager {
         this.addGame(GameType.GOLEM_VS_GOLEM)?.start();
     };
 
-    addGame = (gameType) => {
-        this.currentGameId++;
-        if (this.getGame(this.currentGameId) !== undefined) {
-            console.log(`!!! game with id: ${this.currentGameId} already exists`);
+    addGame = (gameType, options) => {
+        let id = 0;
+        if (options === undefined || options.id === undefined) {
+            id = this.currentGameId++;
+        } else {
+            id = options.id;
+        }
+        if (this.getGame(id) !== undefined) {
+            console.log(`!!! game with id: ${id} already exists`);
             return undefined;
         }
-        const game = new ChessGame(this.currentGameId, this.chessServer, gameType);
+        const game = new ChessGame(id, this.chessServer, gameType);
         this.games.push(game);
 
         return game;
