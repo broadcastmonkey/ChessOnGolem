@@ -22,6 +22,7 @@ class ChessGame {
         this.gameStatus = StatusType.INITIATED;
         this.winner = "";
         this.winnerType = "";
+        this.playerColor = PlayerType.WHITE;
         //assumes player always starts game
         this.turnType = gameType === GameType.GOLEM_VS_GOLEM ? TurnType.GOLEM : TurnType.PLAYER;
     }
@@ -151,6 +152,7 @@ class ChessGame {
         if (this.turnType === TurnType.GOLEM) this.moves[this.stepId].move = move;
         else this.moves[this.stepId].move = move.from + ":" + move.to;
         this.moves[this.stepId].calculated = true;
+        this.moves[this.stepId].fen = this.chess.fen();
         if (result === null) {
             console.log("!!! ERROR ! ");
             return MoveStatus.ERROR;
@@ -159,7 +161,7 @@ class ChessGame {
         this.chessServer.sendChessPosition({
             gameId: this.gameId,
             stepId: this.stepId,
-            position: this.chess.fen(),
+            position: this.moves[this.stepId].fen,
         });
         this.chessServer.sendChessMove({
             gameId: this.gameId,
@@ -170,6 +172,8 @@ class ChessGame {
         this.displayCurrentChessBoard();
         if (this.chess.game_over()) {
             this.gameStatus = StatusType.FINISHED;
+            this.isGameFinished = true;
+
             this.moves[this.stepId].isGameFinished = true;
             if (this.chess.in_checkmate()) {
                 this.moves[this.stepId].winnerType = WinnerType.CHECKMATE;
@@ -184,6 +188,8 @@ class ChessGame {
                 winner: this.moves[this.stepId].winner,
                 type: this.moves[this.stepId].winnerType,
             });
+            this.winner = this.moves[this.stepId].winner;
+            this.winnerType = this.moves[this.stepId].winnerType;
             return MoveStatus.GAME_FINISHED;
         }
         return MoveStatus.GAME_CONTINUES;
@@ -273,6 +279,7 @@ class ChessGame {
             winnerType: this.winnerType,
             turnType: this.turnType,
             calculated: this.calculated,
+            playerColor: this.playerColor,
             fen: this.chess.fen(),
         };
     };
@@ -298,6 +305,7 @@ class ChessGame {
         this.winner = data.winner;
         this.winnerType = data.winnerType;
         this.turnType = data.turnType;
+        this.playerColor = data.playerColor;
         this.chess.load(data.fen);
     };
 

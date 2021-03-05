@@ -4,6 +4,7 @@ const toBool = require("to-bool");
 const { GameType } = require("./enums");
 const fs = require("fs");
 const ChessTempPathHelper = require("../helpers/chess-temp-path-helper");
+const { getTaskIdHash } = require("../helpers/get-task-hash-id");
 events.setMaxListeners(100);
 class GamesManager {
     constructor(chessServer) {
@@ -28,7 +29,26 @@ class GamesManager {
         events.addListener("script_sent", this.scriptSent);
         events.addListener("new_game_request", this.newGameRequest);
         events.addListener("new_move_request", this.newMoveRequest);
+        events.addListener("get_game_data", this.handleGetGameData);
     }
+    handleGetGameData = (data) => {
+        const { socket, gameId } = data;
+        if (gameId === undefined) return;
+        const game = this.games.find((x) => x.gameId === gameId);
+        console.log("idid" + gameId);
+        this.games.forEach((x) => {
+            console.log(`game id : ${x.gameId}`);
+        });
+        if (game === undefined) {
+            socket.emit("gameData", { status: 404 });
+        } else {
+            socket.emit("gameData", {
+                status: 400,
+                result: game.getGameObject(),
+                taskId: getTaskIdHash(game.gameId, game.stepId),
+            });
+        }
+    };
     getGamesInProgressCount = () => {
         return this.games.filter((x) => x.isGameFinished === false).length;
     };

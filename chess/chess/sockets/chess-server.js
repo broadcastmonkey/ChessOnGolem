@@ -53,6 +53,10 @@ class ChessSocketServer {
             socket.on("newMove", (data, callback) => {
                 this.handleNewMove(socket, data, callback);
             });
+            socket.on("getGameData", (data, callback) => {
+                console.log("AAAAAAAAAAAAAAA" + data.gameId);
+                this.handleGetGameData(socket, data, callback);
+            });
             socket.on("disconnect", () => {
                 this.handleDisconnect(socket);
             });
@@ -64,12 +68,15 @@ class ChessSocketServer {
     handleNewMove = async (socket, data, callback) => {
         if (callback) callback({ msg: "new_move_request" }); // obj: successfuly joined ?
         eventsEmitter.emit("new_move_request", data);
-        console.log("new move request");
+    };
+    handleGetGameData = async (socket, data, callback) => {
+        console.log("get game data");
+        if (callback) callback({ msg: "get_game_data" }); // obj: successfuly joined ?
+        eventsEmitter.emit("get_game_data", { socket, ...data });
     };
     handleNewGameRequest = async (socket, data, callback) => {
         if (callback) callback({ msg: "new_game_request" }); // obj: successfuly joined ?
         eventsEmitter.emit("new_game_request", { socket });
-        console.log("new game request");
     };
     emitEvent(eventName, data) {
         if (data.gameId !== undefined && data.stepId !== undefined) {
