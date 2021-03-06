@@ -49,7 +49,7 @@ class ChessGame {
     };
     performGolemCalculationsWrapper = async (data) => {
         this.gameStatus = StatusType.WAITING_FOR_GOLEM_CALCULATION;
-        data.depth = data.turnId == PlayerType.WHITE ? 10 : 1;
+        data.depth = data.turnId == PlayerType.WHITE ? 3 : 2;
         const { chess, ...dataForGui } = data;
 
         this.debugLog("performGolemCalculationsWrapper", dataForGui);

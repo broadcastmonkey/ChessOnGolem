@@ -1,3 +1,5 @@
+const { GameType } = require("./games-manager/enums");
+
 require("dotenv").config();
 
 const httpServer = new (require("./sockets/http-server"))();
@@ -6,7 +8,7 @@ const gamesManager = new (require("./games-manager/games-manager"))(chessServer)
 gamesManager.loadGamesFromDisk();
 require("./sockets/winsigint");
 //setTimeout(() => {}, 3000);
-if (gamesManager.getGamesInProgressCount() === 0) {
+if (gamesManager.getGamesInProgressCount({ gameType: GameType.GOLEM_VS_GOLEM }) === 0) {
     console.log("none games in progress detected - starting new game!");
     gamesManager.startSampleGame();
 }

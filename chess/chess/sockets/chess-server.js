@@ -54,28 +54,30 @@ class ChessSocketServer {
                 this.handleNewMove(socket, data, callback);
             });
             socket.on("getGameData", (data, callback) => {
-                console.log("AAAAAAAAAAAAAAA" + data.gameId);
                 this.handleGetGameData(socket, data, callback);
+            });
+            socket.on("getGames", (data, callback) => {
+                this.handleGetGames(socket, data, callback);
             });
             socket.on("disconnect", () => {
                 this.handleDisconnect(socket);
             });
-            /*socket.on("adminEvent", (message, callback) => {
-                this.handleAdminEventMessage(socket, message, callback);
-            });*/
         });
     }
     handleNewMove = async (socket, data, callback) => {
-        if (callback) callback({ msg: "new_move_request" }); // obj: successfuly joined ?
+        if (callback) callback({ msg: "new_move_request" });
         eventsEmitter.emit("new_move_request", data);
     };
     handleGetGameData = async (socket, data, callback) => {
-        console.log("get game data");
-        if (callback) callback({ msg: "get_game_data" }); // obj: successfuly joined ?
+        if (callback) callback({ msg: "get_game_data" });
         eventsEmitter.emit("get_game_data", { socket, ...data });
     };
+    handleGetGames = async (socket, data, callback) => {
+        if (callback) callback({ msg: "get_games" });
+        eventsEmitter.emit("get_games", { socket, ...data });
+    };
     handleNewGameRequest = async (socket, data, callback) => {
-        if (callback) callback({ msg: "new_game_request" }); // obj: successfuly joined ?
+        if (callback) callback({ msg: "new_game_request" });
         eventsEmitter.emit("new_game_request", { socket });
     };
     emitEvent(eventName, data) {

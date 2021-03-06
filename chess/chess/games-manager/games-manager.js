@@ -30,6 +30,7 @@ class GamesManager {
         events.addListener("new_game_request", this.newGameRequest);
         events.addListener("new_move_request", this.newMoveRequest);
         events.addListener("get_game_data", this.handleGetGameData);
+        events.addListener("get_games", this.handleGetGames);
     }
     handleGetGameData = (data) => {
         const { socket, gameId } = data;
@@ -48,6 +49,21 @@ class GamesManager {
                 taskId: getTaskIdHash(game.gameId, game.stepId),
             });
         }
+    };
+    handleGetGames = (data) => {
+        const { socket } = data;
+
+        const games = [];
+        this.games.forEach((x) => {
+            const vals = x.getGameObject();
+            const { moves, ...game } = vals;
+            games.push(game);
+        });
+
+        socket.emit("gamesData", {
+            status: 400,
+            games,
+        });
     };
     getGamesInProgressCount = () => {
         return this.games.filter((x) => x.isGameFinished === false).length;
