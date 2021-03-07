@@ -38,7 +38,7 @@ class ChessSocketServer {
         this.io = socketIO(server);
 
         this.io.on("connection", (socket) => {
-            console.log("[n]   new client...");
+            //console.log("[n]   new client...");
 
             socket.on("join", (param, callback) => {
                 this.handleJoin(socket, param, callback);
@@ -59,11 +59,19 @@ class ChessSocketServer {
             socket.on("getGames", (data, callback) => {
                 this.handleGetGames(socket, data, callback);
             });
+            socket.on("getConnectedSocketsCount", (data, callback) => {
+                this.handleConnectedSocketsCount(socket, data, callback);
+            });
+
             socket.on("disconnect", () => {
                 this.handleDisconnect(socket);
             });
         });
     }
+    handleConnectedSocketsCount = async (socket, data, callback) => {
+        if (callback) callback({ msg: "connected_sockets_count" });
+        socket.emit("connectedSocketsCount", { status: 400, result: this.users.length });
+    };
     handleNewMove = async (socket, data, callback) => {
         if (callback) callback({ msg: "new_move_request" });
         eventsEmitter.emit("new_move_request", data);
@@ -125,14 +133,15 @@ class ChessSocketServer {
     };
     sendMovesList = (moves) => {
         this.debugLog("sendMovesList", moves);
+        //console.log("emiting moves list");
         this.io.to("chess").emit("movesRefreshed", moves);
         this.lastMoves = moves;
     };
     gameFinished = (game) => {
         this.debugLog("gameFinished", game);
         // error: remove it or move to chess-game or create a map here with gameIds
-        this.gameFinishedWinner = game.winner;
-        this.gameFinishedType = game.type;
+        // this.gameFinishedWinner = game.winner;
+        // this.gameFinishedType = game.type;
         this.io.to("chess").emit("gameFinished", game);
     };
     offersReceived = (data) => {
@@ -187,35 +196,39 @@ class ChessSocketServer {
             console.log("handleJoin", "user withc socket id: " + socket.id + " already exists...");
         }
 
-        console.log("adding user : ", socket.id);
+        //console.log("adding user : ", socket.id);
 
         const { error, user } = this.addUser({ id: socket.id });
 
         if (error) return callback ? callback({ error: "error 2" }) : null;
 
-        console.log("user added", user);
-        socket.join("chess");
-        this.io.to("chess").emit("positionEvent", this.lastPosition);
-        if (this.lastMoveData !== null)
-            this.io.to("chess").emit("currentTurnEvent", this.lastMoveData);
-        this.io.to("chess").emit("movesRefreshed", this.lastMoves);
-
+        //console.log("user added", user);
+        socket.join(
+            "chess",
+        ); /*
         if (this.gameFinishedWinner !== "") {
             this.io.to("chess").emit("gameFinished", {
                 winner: this.gameFinishedWinner,
                 type: this.gameFinishedType,
             });
-        }
-        if (callback) callback("chess"); // obj: successfuly joined ?
+        }*/
+        /*this.io.to("chess").emit("positionEvent", this.lastPosition);
+        if (this.lastMoveData !== null)
+            this.io.to("chess").emit("currentTurnEvent", this.lastMoveData);
+        this.io.to("chess").emit("movesRefreshed", this.lastMoves);
+*/ if (
+            callback
+        )
+            callback("chess"); // obj: successfuly joined ?
     };
 
     handleDisconnect = (socket) => {
-        console.log("disconnected socket... trying to remove user fom Users Array");
+        // console.log("disconnected socket... trying to remove user fom Users Array");
         const user = this.removeUser(socket.id);
         if (user) {
-            console.log("login of disconnected user", user.id);
+            // console.log("login of disconnected user", user.id);
         } else {
-            console.log("disconnected socket was not registered in Users Array");
+            // console.log("disconnected socket was not registered in Users Array");
         }
     };
     debugLog = (functionName, data) => {

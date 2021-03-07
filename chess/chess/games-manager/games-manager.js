@@ -36,10 +36,10 @@ class GamesManager {
         const { socket, gameId } = data;
         if (gameId === undefined) return;
         const game = this.games.find((x) => x.gameId === gameId);
-        console.log("idid" + gameId);
-        this.games.forEach((x) => {
+        // console.log("idid" + gameId);
+        /*this.games.forEach((x) => {
             console.log(`game id : ${x.gameId}`);
-        });
+        });*/
         if (game === undefined) {
             socket.emit("gameData", { status: 404 });
         } else {
@@ -65,8 +65,12 @@ class GamesManager {
             games,
         });
     };
-    getGamesInProgressCount = () => {
-        return this.games.filter((x) => x.isGameFinished === false).length;
+    getGamesInProgressCount = (options) => {
+        if (options !== undefined && options.gameType !== undefined)
+            return this.games.filter(
+                (x) => x.isGameFinished === false && x.gameType === options.gameType,
+            ).length;
+        else return this.games.filter((x) => x.isGameFinished === false).length;
     };
     loadGamesFromDisk = () => {
         console.log("loading games from disk...");

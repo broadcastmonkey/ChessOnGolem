@@ -35,7 +35,10 @@ class ChessGame {
         else console.log("starting game : " + this.gameId);
 
         this.gameStatus = StatusType.STARTED;
-        if (this.gameType == GameType.GOLEM_VS_GOLEM) {
+        if (
+            this.gameType === GameType.GOLEM_VS_GOLEM ||
+            (this.gameType === GameType.PLAYER_VS_GOLEM && this.turnType === TurnType.GOLEM)
+        ) {
             this.performGolemCalculationsWrapper({
                 turnId: this.globalTurn,
                 gameId: this.gameId,
@@ -48,6 +51,8 @@ class ChessGame {
         }
     };
     performGolemCalculationsWrapper = async (data) => {
+        console.log("calc");
+
         this.gameStatus = StatusType.WAITING_FOR_GOLEM_CALCULATION;
         data.depth = data.turnId == PlayerType.WHITE ? 3 : 2;
         const { chess, ...dataForGui } = data;
@@ -112,7 +117,7 @@ class ChessGame {
         this.moves[this.stepId].stepId = this.stepId;
         this.moves[this.stepId].depth = 0;
         this.moves[this.stepId].turn = this.globalTurn;
-        this.moves[this.stepId].playerType = TurnType.GOLEM;
+        this.moves[this.stepId].playerType = TurnType.PLAYER;
 
         this.startNewGolemCalculation(data.move, TurnType.PLAYER);
     };
@@ -185,8 +190,10 @@ class ChessGame {
             console.log("!!!! game over !!!!! / " + this.moves[this.stepId].winnerType);
             console.log(this.chess.ascii());
             this.chessServer.gameFinished({
+                gameId: this.gameId,
+                stepId: this.stepId,
                 winner: this.moves[this.stepId].winner,
-                type: this.moves[this.stepId].winnerType,
+                winnerType: this.moves[this.stepId].winnerType,
             });
             this.winner = this.moves[this.stepId].winner;
             this.winnerType = this.moves[this.stepId].winnerType;
