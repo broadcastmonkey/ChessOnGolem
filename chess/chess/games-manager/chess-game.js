@@ -23,6 +23,9 @@ class ChessGame {
         this.winner = "";
         this.winnerType = "";
         this.playerColor = PlayerType.WHITE;
+        this.gameStartedTime = Date.now();
+        this.gameFinishedTime = null;
+        this.lastMoveTime = null;
         //assumes player always starts game
         this.turnType = gameType === GameType.GOLEM_VS_GOLEM ? TurnType.GOLEM : TurnType.PLAYER;
     }
@@ -154,14 +157,18 @@ class ChessGame {
         console.log("turn type: " + this.turnType);
         this.debugLog("PerformMoveAndCheckForGameOver", move);
         const result = this.chess.move(move, { sloppy: true });
-        if (this.turnType === TurnType.GOLEM) this.moves[this.stepId].move = move;
-        else this.moves[this.stepId].move = move.from + ":" + move.to;
-        this.moves[this.stepId].calculated = true;
-        this.moves[this.stepId].fen = this.chess.fen();
+
         if (result === null) {
             console.log("!!! ERROR ! ");
             return MoveStatus.ERROR;
         }
+        this.lastMoveTime = Date.now();
+
+        if (this.turnType === TurnType.GOLEM) this.moves[this.stepId].move = move;
+        else this.moves[this.stepId].move = move.from + ":" + move.to;
+        this.moves[this.stepId].calculated = true;
+        this.moves[this.stepId].fen = this.chess.fen();
+
         this.refreshMoves();
         this.chessServer.sendChessPosition({
             gameId: this.gameId,
@@ -197,6 +204,9 @@ class ChessGame {
             });
             this.winner = this.moves[this.stepId].winner;
             this.winnerType = this.moves[this.stepId].winnerType;
+
+            this.gameFinishedTime = Date.now();
+
             return MoveStatus.GAME_FINISHED;
         }
         return MoveStatus.GAME_CONTINUES;
@@ -287,6 +297,9 @@ class ChessGame {
             turnType: this.turnType,
             calculated: this.calculated,
             playerColor: this.playerColor,
+            gameStartedTime: this.gameStartedTime,
+            gameFinishedTime: this.gameFinishedTime,
+            lastMoveTime: this.lastMoveTime,
             fen: this.chess.fen(),
         };
     };
@@ -313,6 +326,10 @@ class ChessGame {
         this.winnerType = data.winnerType;
         this.turnType = data.turnType;
         this.playerColor = data.playerColor;
+        this.gameStartedTime = data.gameStartedTime;
+        this.gameFinishedTime = data.gameFinishedTime;
+        this.lastMoveTime = data.lastMoveTime;
+
         this.chess.load(data.fen);
     };
 
