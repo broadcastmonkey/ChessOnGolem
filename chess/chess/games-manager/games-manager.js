@@ -31,7 +31,26 @@ class GamesManager {
         events.addListener("new_move_request", this.newMoveRequest);
         events.addListener("get_game_data", this.handleGetGameData);
         events.addListener("get_games", this.handleGetGames);
+        events.addListener(
+            "new_golem_vs_golem_game_request",
+            this.handleNewGolemVsGolemGameRequest,
+        );
     }
+    handleNewGolemVsGolemGameRequest = (socket) => {
+        if (gamesManager.getGamesInProgressCount({ gameType: GameType.GOLEM_VS_GOLEM }) === 0) {
+            console.log("[i] starting new game ... ");
+
+            //this.currentGameId = this.getRandomInt(1000);
+            this.addGame(GameType.GOLEM_VS_GOLEM)?.start();
+        }
+        const game = this.games.find(
+            (x) => x.gameType === GameType.GOLEM_VS_GOLEM && x.isGameFinished === false,
+        );
+        if (game !== undefined) {
+            socket.emit("newGolemVsGolemGame", { gameId: game.gameId });
+        }
+    };
+
     handleGetGameData = (data) => {
         const { socket, gameId } = data;
         if (gameId === undefined) return;

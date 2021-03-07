@@ -50,6 +50,9 @@ class ChessSocketServer {
             socket.on("newGameRequest", (data, callback) => {
                 this.handleNewGameRequest(socket, data, callback);
             });
+            socket.on("newGolemVsGolemGameRequest", (data, callback) => {
+                this.handleNewGolemVsGolemGameRequest(socket, data, callback);
+            });
             socket.on("newMove", (data, callback) => {
                 this.handleNewMove(socket, data, callback);
             });
@@ -83,6 +86,10 @@ class ChessSocketServer {
     handleGetGames = async (socket, data, callback) => {
         if (callback) callback({ msg: "get_games" });
         eventsEmitter.emit("get_games", { socket, ...data });
+    };
+    handleNewGolemVsGolemGameRequest = async (socket, data, callback) => {
+        if (callback) callback({ msg: "new_game_request" });
+        eventsEmitter.emit("new_golem_vs_golem_game_request", { socket });
     };
     handleNewGameRequest = async (socket, data, callback) => {
         if (callback) callback({ msg: "new_game_request" });
