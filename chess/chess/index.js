@@ -1,3 +1,4 @@
+const toBool = require("to-bool");
 const { GameType } = require("./games-manager/enums");
 
 require("dotenv").config();
@@ -7,7 +8,7 @@ const chessServer = new (require("./sockets/chess-server"))(httpServer.server);
 const gamesManager = new (require("./games-manager/games-manager"))(chessServer);
 gamesManager.loadGamesFromDisk();
 require("./sockets/winsigint");
-if (process.env.CREATE_NEW_GAME_ON_STARTUP) {
+if (toBool(process.env.CREATE_NEW_GAME_ON_STARTUP)) {
     if (gamesManager.getGamesInProgressCount({ gameType: GameType.GOLEM_VS_GOLEM }) === 0) {
         console.log("none games in progress detected - starting new game!");
         gamesManager.startSampleGame();
