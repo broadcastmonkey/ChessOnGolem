@@ -26,8 +26,8 @@ class ChessGame {
         this.gameStartedTime = Date.now();
         this.gameFinishedTime = null;
         this.lastMoveTime = null;
-        this.depthWhite = 10;
-        this.depthBlack = 5;
+        this.depthWhite = 13;
+        this.depthBlack = 2;
         //assumes player always starts game
         this.turnType = gameType === GameType.GOLEM_VS_GOLEM ? TurnType.GOLEM : TurnType.PLAYER;
     }
