@@ -17,7 +17,7 @@
         "socketio": "^1.0.0",
         "to-bool": "^0.0.1",
         "ts-node": "^9.0.0",
-        "yajsapi": "^0.3.0"
+        "yajsapi": "^0.3.1-alpha.2"
     },
     "devDependencies": {
         "tsconfig-paths": "^3.9.0",
