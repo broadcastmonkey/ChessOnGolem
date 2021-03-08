@@ -5,6 +5,9 @@ const toBool = require("to-bool");
 const fs = require("fs");
 const { GameType, PlayerType, TurnType, StatusType, MoveStatus, WinnerType } = require("./enums");
 const { ComposedStorageProvider } = require("yajsapi/dist/storage");
+function getRandomInt(max) {
+    return Math.floor(Math.random() * Math.floor(max));
+}
 
 class ChessGame {
     constructor(id, chessServer, gameType) {
@@ -26,8 +29,8 @@ class ChessGame {
         this.gameStartedTime = Date.now();
         this.gameFinishedTime = null;
         this.lastMoveTime = null;
-        this.depthWhite = 13;
-        this.depthBlack = 2;
+        this.depthWhite = getRandomInt(17) + 1;
+        this.depthBlack = getRandomInt(17) + 1;
         //assumes player always starts game
         this.turnType = gameType === GameType.GOLEM_VS_GOLEM ? TurnType.GOLEM : TurnType.PLAYER;
     }
