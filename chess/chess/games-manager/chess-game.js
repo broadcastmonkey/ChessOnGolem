@@ -26,6 +26,8 @@ class ChessGame {
         this.gameStartedTime = Date.now();
         this.gameFinishedTime = null;
         this.lastMoveTime = null;
+        this.depthWhite = 10;
+        this.depthBlack = 5;
         //assumes player always starts game
         this.turnType = gameType === GameType.GOLEM_VS_GOLEM ? TurnType.GOLEM : TurnType.PLAYER;
     }
@@ -57,7 +59,7 @@ class ChessGame {
         console.log("calc");
 
         this.gameStatus = StatusType.WAITING_FOR_GOLEM_CALCULATION;
-        data.depth = data.turnId == PlayerType.WHITE ? 3 : 2;
+        data.depth = data.turnId == PlayerType.WHITE ? this.depthWhite : this.depthBlack;
         const { chess, ...dataForGui } = data;
 
         this.debugLog("performGolemCalculationsWrapper", dataForGui);
@@ -300,6 +302,8 @@ class ChessGame {
             gameStartedTime: this.gameStartedTime,
             gameFinishedTime: this.gameFinishedTime,
             lastMoveTime: this.lastMoveTime,
+            depthBlack: this.depthBlack,
+            depthWhite: this.depthWhite,
             fen: this.chess.fen(),
         };
     };
@@ -329,7 +333,8 @@ class ChessGame {
         this.gameStartedTime = data.gameStartedTime;
         this.gameFinishedTime = data.gameFinishedTime;
         this.lastMoveTime = data.lastMoveTime;
-
+        this.depthWhite = data.depthWhite === undefined ? 10 : data.depthWhite;
+        this.depthBlack = data.depthBlack === undefined ? 10 : data.depthBlack;
         this.chess.load(data.fen);
     };
 

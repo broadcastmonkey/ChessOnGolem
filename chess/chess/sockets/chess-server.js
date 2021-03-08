@@ -89,7 +89,7 @@ class ChessSocketServer {
     };
     handleNewGolemVsGolemGameRequest = async (socket, data, callback) => {
         if (callback) callback({ msg: "new_game_request" });
-        eventsEmitter.emit("new_golem_vs_golem_game_request", { socket });
+        eventsEmitter.emit("new_golem_vs_golem_game_request", socket);
     };
     handleNewGameRequest = async (socket, data, callback) => {
         if (callback) callback({ msg: "new_game_request" });

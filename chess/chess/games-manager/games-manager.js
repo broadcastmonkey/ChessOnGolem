@@ -37,7 +37,7 @@ class GamesManager {
         );
     }
     handleNewGolemVsGolemGameRequest = (socket) => {
-        if (gamesManager.getGamesInProgressCount({ gameType: GameType.GOLEM_VS_GOLEM }) === 0) {
+        if (this.getGamesInProgressCount({ gameType: GameType.GOLEM_VS_GOLEM }) === 0) {
             console.log("[i] starting new game ... ");
 
             //this.currentGameId = this.getRandomInt(1000);
