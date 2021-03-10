@@ -22,6 +22,7 @@ class User {
         const token = jwt.sign(
             {
                 login: this.login,
+                password: this.password,
                 id: this.id,
             },
             process.env.JWT_PRIVATE_KEY,
