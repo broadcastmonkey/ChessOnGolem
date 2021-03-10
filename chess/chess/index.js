@@ -1,7 +1,7 @@
+require("dotenv").config();
+
 const toBool = require("to-bool");
 const { GameType } = require("./games-manager/enums");
-
-require("dotenv").config();
 
 const httpServer = new (require("./sockets/http-server"))();
 const chessServer = new (require("./sockets/chess-server"))(httpServer.server);

@@ -8,6 +8,8 @@ class ChessTempPathHelper {
             this.GamesFolder,
             "game_" + gameId.toString().padStart(4, "0") + ".json",
         );
+        this.UsersFolder = path.join(appDir, "../tmp/users/");
+        this.UsersFilePath = path.join(this.UsersFolder, "users.json");
 
         this.DefaultFileName = path.join("step_" + stepId.toString().padStart(4, "0") + ".txt");
         this.OutputFolder = path.join(appDir, "../tmp", "game_" + gameId + "/output");
@@ -18,12 +20,6 @@ class ChessTempPathHelper {
         this.ChessBoardFilePath = path.join(this.InputFolder, "chessboard_" + this.DefaultFileName);
 
         this.OutputLogFilePath = path.join(this.OutputFolder, "log_" + this.DefaultFileName);
-
-        /*this.MoveHash =
-      "hash_" +
-      gameId.toString().padStart(8, "0") +
-      "_" +
-      step.toString().padStart(4, "0");*/
     }
 }
 
