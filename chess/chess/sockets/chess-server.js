@@ -62,6 +62,9 @@ class ChessSocketServer {
             socket.on("getGames", (data, callback) => {
                 this.handleGetGames(socket, data, callback);
             });
+            socket.on("registerUser", (data, callback) => {
+                this.handleRegisterUser(socket, data, callback);
+            });
             socket.on("getConnectedSocketsCount", (data, callback) => {
                 this.handleConnectedSocketsCount(socket, data, callback);
             });
@@ -71,6 +74,10 @@ class ChessSocketServer {
             });
         });
     }
+    handleRegisterUser = async (socket, data, callback) => {
+        if (callback) callback({ msg: "register_user" });
+        eventsEmitter.emit("register_user", { socket, ...data });
+    };
     handleConnectedSocketsCount = async (socket, data, callback) => {
         if (callback) callback({ msg: "connected_sockets_count" });
         socket.emit("connectedSocketsCount", { status: 400, result: this.users.length });

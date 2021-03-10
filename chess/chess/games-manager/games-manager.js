@@ -7,12 +7,13 @@ const ChessTempPathHelper = require("../helpers/chess-temp-path-helper");
 const { getTaskIdHash } = require("../helpers/get-task-hash-id");
 events.setMaxListeners(100);
 class GamesManager {
-    constructor(chessServer) {
+    constructor(chessServer, users) {
         this.currentGameId = 0;
         this.games = [];
         this.chessServer = chessServer;
         this.total = 0;
         this.active = true;
+        this.usersManager = users;
 
         events.addListener("calculation_requested", this.calculationRequested);
         events.addListener("subscription_created", this.subscriptionCreated);

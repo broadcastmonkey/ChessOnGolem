@@ -2,10 +2,10 @@ require("dotenv").config();
 
 const toBool = require("to-bool");
 const { GameType } = require("./games-manager/enums");
-
+const users = new (require("./users-manager/users-manager"))();
 const httpServer = new (require("./sockets/http-server"))();
 const chessServer = new (require("./sockets/chess-server"))(httpServer.server);
-const gamesManager = new (require("./games-manager/games-manager"))(chessServer);
+const gamesManager = new (require("./games-manager/games-manager"))(chessServer, users);
 gamesManager.loadGamesFromDisk();
 require("./sockets/winsigint");
 if (toBool(process.env.CREATE_NEW_GAME_ON_STARTUP)) {
@@ -24,5 +24,5 @@ process.on("SIGINT", () => {
 
     setTimeout(() => {
         process.exit();
-    }, 20 * 1000);
+    }, 1 * 1000);
 });

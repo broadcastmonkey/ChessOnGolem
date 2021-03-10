@@ -1,27 +1,27 @@
 const jwt = require("jsonwebtoken");
 
 class User {
-    constructor(id, userName) {
-        if (id !== undefined && userName !== undefined) {
-            this.name = userName;
+    constructor(id, login) {
+        if (id !== undefined && login !== undefined) {
+            this.login = login;
             this.password = this.generatePassword();
             this.id = id;
             this.jwt = this.generateJWT();
         }
     }
     load = (obj) => {
-        this.name = obj.name;
+        this.login = obj.login;
         this.password = obj.password;
         this.id = obj.id;
         this.jwt = obj.jwt;
     };
     getObject = () => {
-        return { name: this.name, password: this.password, id: this.id, jwt: this.jwt };
+        return { login: this.login, password: this.password, id: this.id, jwt: this.jwt };
     };
     generateJWT = () => {
         const token = jwt.sign(
             {
-                name: this.name,
+                login: this.login,
                 id: this.id,
             },
             process.env.JWT_PRIVATE_KEY,
