@@ -176,13 +176,16 @@ class ChessGame {
                 return true;
             case Authorization.SERVER: {
                 try {
+                    // console.log(`authorizing...` + token.token);
                     const decodedToken = jwt.verify(token.token, process.env.JWT_PRIVATE_KEY);
+
                     return (
                         decodedToken.login === this.playerLogin &&
                         this.playerId === decodedToken.id &&
-                        this.playerJWT === options.token.token
+                        this.playerJWT === token.token
                     );
                 } catch {
+                    //     console.log(`veirification failed!`);
                     return false;
                 }
             }
@@ -196,7 +199,7 @@ class ChessGame {
 
         if (!this.isAuthorized(token)) return { status: 401 };
 
-        console.log("here");
+        //  console.log("here");
         this.moves[this.stepId] = {};
         this.moves[this.stepId].gameId = this.gameId;
         this.moves[this.stepId].stepId = this.stepId;
