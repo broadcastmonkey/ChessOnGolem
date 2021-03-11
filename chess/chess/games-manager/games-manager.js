@@ -65,7 +65,7 @@ class GamesManager {
         } else {
             socket.emit("gameData", {
                 status: 400,
-                result: game.getGameObject(),
+                result: game.getGameObject(false),
                 taskId: getTaskIdHash(game.gameId, game.stepId),
             });
         }
@@ -75,7 +75,7 @@ class GamesManager {
 
         const games = [];
         this.games.forEach((x) => {
-            const vals = x.getGameObject();
+            const vals = x.getGameObject(false);
             const { moves, ...game } = vals;
             games.push(game);
         });
@@ -131,11 +131,15 @@ class GamesManager {
         } else {
             id = options.id;
         }
+
         if (this.getGame(id) !== undefined) {
             console.log(`!!! game with id: ${id} already exists`);
             return undefined;
         }
-        const game = new ChessGame(id, this.chessServer, gameType);
+
+        console.log(`options: ` + JSON.stringify(options, null, 4));
+
+        const game = new ChessGame(id, this.chessServer, gameType, options);
         this.games.push(game);
 
         return game;
@@ -151,8 +155,8 @@ class GamesManager {
             ?.newMoveRequest(data);
     };
     newGameRequest = (data) => {
-        this.debugLog("newGameRequest", {});
-        const game = this.addGame(GameType.PLAYER_VS_GOLEM);
+        this.debugLog("newGameRequest", data);
+        const game = this.addGame(GameType.PLAYER_VS_GOLEM, data.options);
         this.chessServer.newGameCreated(data.socket, game.gameId);
         game.start();
     };

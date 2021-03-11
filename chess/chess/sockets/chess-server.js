@@ -107,7 +107,7 @@ class ChessSocketServer {
     };
     handleNewGameRequest = async (socket, data, callback) => {
         if (callback) callback({ msg: "new_game_request" });
-        eventsEmitter.emit("new_game_request", { socket });
+        eventsEmitter.emit("new_game_request", { socket, options: data });
     };
     emitEvent(eventName, data) {
         if (data.gameId !== undefined && data.stepId !== undefined) {

@@ -1,8 +1,11 @@
-## Chess on Golem Viewer
+## Chess on Golem
 
 ### Summary
 
 This project was created as an entry to Golem Hackathon 12/2020.
+
+The other part of project - Chess on Golem Viewer (react app that works as a GUI for Chess on Golem ) can be viewed here:
+https://broadcastmonkey/ChessOnGolemViewer
 
 It's purpose is to show that any state based game / problem can be run in Golem Network and solved interactively by provider nodes.
 
