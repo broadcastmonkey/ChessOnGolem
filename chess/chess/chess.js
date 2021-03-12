@@ -84,7 +84,7 @@ performGolemCalculations = async (moveData) => {
             ctx.download_file("/golem/work/output2.txt", paths.OutputLogFilePath);
             debugLog("*** downloading result for depth (" + depth + ") ... ");
             yield ctx.commit({
-                timeout: dayjs.duration({ seconds: 120 }).asMilliseconds(),
+                timeout: dayjs.duration({ seconds: 60 }).asMilliseconds(),
             });
 
             if (fs.readFileSync(paths.OutputFilePath, "utf8").includes("bestmove")) {
@@ -99,7 +99,7 @@ performGolemCalculations = async (moveData) => {
     }
 
     const Subtasks = range(0, 1, 1);
-    const timeout = dayjs.duration({ minutes: 15 }).asMilliseconds();
+    const timeout = dayjs.duration({ minutes: 8 }).asMilliseconds();
 
     const emitter = new WrappedEmitter(gameId, stepId);
     const engine = await new Executor({

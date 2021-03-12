@@ -77,6 +77,7 @@ class GamesManager {
         this.games.forEach((x) => {
             const vals = x.getGameObject(false);
             const { moves, ...game } = vals;
+            game.movesCount = moves.length;
             games.push(game);
         });
 
