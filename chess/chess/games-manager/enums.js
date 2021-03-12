@@ -33,7 +33,13 @@ const WinnerType = {
     NONE: "",
 };
 
+const Authorization = {
+    SERVER: "server",
+    LOCAL: "local",
+    NONE: "none",
+};
 module.exports = {
+    Authorization,
     GameType,
     TurnType,
     PlayerType,

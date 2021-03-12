@@ -62,6 +62,12 @@ class ChessSocketServer {
             socket.on("getGames", (data, callback) => {
                 this.handleGetGames(socket, data, callback);
             });
+            socket.on("registerUser", (data, callback) => {
+                this.handleRegisterUser(socket, data, callback);
+            });
+            socket.on("loginUser", (data, callback) => {
+                this.handleLoginUser(socket, data, callback);
+            });
             socket.on("getConnectedSocketsCount", (data, callback) => {
                 this.handleConnectedSocketsCount(socket, data, callback);
             });
@@ -71,6 +77,14 @@ class ChessSocketServer {
             });
         });
     }
+    handleLoginUser = async (socket, data, callback) => {
+        if (callback) callback({ msg: "login_user" });
+        eventsEmitter.emit("login_user", { socket, ...data });
+    };
+    handleRegisterUser = async (socket, data, callback) => {
+        if (callback) callback({ msg: "register_user" });
+        eventsEmitter.emit("register_user", { socket, ...data });
+    };
     handleConnectedSocketsCount = async (socket, data, callback) => {
         if (callback) callback({ msg: "connected_sockets_count" });
         socket.emit("connectedSocketsCount", { status: 400, result: this.users.length });
@@ -93,7 +107,7 @@ class ChessSocketServer {
     };
     handleNewGameRequest = async (socket, data, callback) => {
         if (callback) callback({ msg: "new_game_request" });
-        eventsEmitter.emit("new_game_request", { socket });
+        eventsEmitter.emit("new_game_request", { socket, options: data });
     };
     emitEvent(eventName, data) {
         if (data.gameId !== undefined && data.stepId !== undefined) {

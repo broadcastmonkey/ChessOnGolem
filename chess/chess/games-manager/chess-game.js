@@ -1,16 +1,31 @@
 const { performGolemCalculations } = require("../chess");
 const { Chess } = require("chess.js");
+const Crypto = require("crypto");
+const { isUuid } = require("uuidv4");
 const ChessTempPathHelper = require("../helpers/chess-temp-path-helper");
 const toBool = require("to-bool");
 const fs = require("fs");
-const { GameType, PlayerType, TurnType, StatusType, MoveStatus, WinnerType } = require("./enums");
+const jwt = require("jsonwebtoken");
+const {
+    GameType,
+    PlayerType,
+    TurnType,
+    StatusType,
+    MoveStatus,
+    WinnerType,
+    Authorization,
+} = require("./enums");
 const { ComposedStorageProvider } = require("yajsapi/dist/storage");
 function getRandomInt(max) {
     return Math.floor(Math.random() * Math.floor(max));
 }
 
+function checkLocalTokenForConstraints(token) {
+    return token !== undefined && isUuid(token);
+}
+
 class ChessGame {
-    constructor(id, chessServer, gameType) {
+    constructor(id, chessServer, gameType, options) {
         this.active = true;
         this.chessServer = chessServer;
         this.chess = new Chess();
@@ -29,10 +44,47 @@ class ChessGame {
         this.gameStartedTime = Date.now();
         this.gameFinishedTime = null;
         this.lastMoveTime = null;
+
         this.depthWhite = getRandomInt(17) + 1;
+        if (this.gameType === GameType.PLAYER_VS_GOLEM) this.depthWhite = 0;
+
         this.depthBlack = getRandomInt(17) + 1;
+        if (options !== undefined && options.depth !== undefined) this.depthBlack = options.depth;
         //assumes player always starts game
         this.turnType = gameType === GameType.GOLEM_VS_GOLEM ? TurnType.GOLEM : TurnType.PLAYER;
+
+        this.playerLogin = "";
+        this.authorizationMethod = Authorization.NONE;
+        this.playerJWT = null;
+        this.playerLocalToken = null;
+        this.playerId = 0;
+
+        // sets authorization
+        if (options !== undefined && options.token !== undefined) {
+            switch (options.token.auth_type) {
+                case "local":
+                    this.authorizationMethod = Authorization.LOCAL;
+                    if (checkLocalTokenForConstraints(options.token.token)) {
+                        this.playerLocalToken = options.token.token;
+                        this.playerLogin = "anonymous";
+                    } else this.fatalError = true;
+                    break;
+                case "server":
+                    this.authorizationMethod = Authorization.SERVER;
+                    try {
+                        const decodedToken = jwt.verify(
+                            options.token.token,
+                            process.env.JWT_PRIVATE_KEY,
+                        );
+                        this.playerLogin = decodedToken.login;
+                        this.playerId = decodedToken.id;
+                        this.playerJWT = options.token.token;
+                    } catch {
+                        this.fatalError = true;
+                    }
+                    break;
+            }
+        }
     }
     start = () => {
         if (this.isGameFinished) {
@@ -118,8 +170,36 @@ class ChessGame {
         if (success) console.log("*** PerformGolemCalculations succeeded");
         else console.log("*** PerformGolemCalculations failed... restarting");
     };
+    isAuthorized = (token) => {
+        switch (this.authorizationMethod) {
+            case Authorization.NONE:
+                return true;
+            case Authorization.SERVER: {
+                try {
+                    // console.log(`authorizing...` + token.token);
+                    const decodedToken = jwt.verify(token.token, process.env.JWT_PRIVATE_KEY);
+
+                    return (
+                        decodedToken.login === this.playerLogin &&
+                        this.playerId === decodedToken.id &&
+                        this.playerJWT === token.token
+                    );
+                } catch {
+                    //     console.log(`veirification failed!`);
+                    return false;
+                }
+            }
+            case Authorization.LOCAL:
+                return token.token === this.playerLocalToken;
+        }
+        return false;
+    };
     newMoveRequest = (data) => {
-        console.log("here");
+        const { move, token } = data;
+
+        if (!this.isAuthorized(token)) return { status: 401 };
+
+        //  console.log("here");
         this.moves[this.stepId] = {};
         this.moves[this.stepId].gameId = this.gameId;
         this.moves[this.stepId].stepId = this.stepId;
@@ -127,7 +207,8 @@ class ChessGame {
         this.moves[this.stepId].turn = this.globalTurn;
         this.moves[this.stepId].playerType = TurnType.PLAYER;
 
-        this.startNewGolemCalculation(data.move, TurnType.PLAYER);
+        this.startNewGolemCalculation(move, TurnType.PLAYER);
+        return { status: 200 };
     };
     refreshMoves = () => {
         this.debugLog("refreshMoves", "");
@@ -288,8 +369,8 @@ class ChessGame {
         if (this.stepId > 1) this.saveToFile();
     };
 
-    getGameObject = () => {
-        return {
+    getGameObject = (isSecure) => {
+        let object = {
             gameId: this.gameId,
             stepId: this.stepId,
             globalTurn: this.globalTurn,
@@ -308,14 +389,34 @@ class ChessGame {
             depthBlack: this.depthBlack,
             depthWhite: this.depthWhite,
             fen: this.chess.fen(),
+            playerLogin: this.playerLogin,
+            authorizationMethod: this.authorizationMethod,
         };
+        if (this.authorizationMethod === Authorization.LOCAL) {
+            object = {
+                ...object,
+                secret: Crypto.createHash("sha256").update(this.playerLocalToken).digest("hex"),
+            };
+        }
+
+        if (isSecure === true) {
+            object = {
+                ...object,
+
+                playerJWT: this.playerJWT,
+                playerLocalToken: this.playerLocalToken,
+                playerId: this.playerId,
+            };
+        }
+
+        return object;
     };
     saveToFile = () => {
         var gameFilePath = this.paths.GameFile;
         if (!fs.existsSync(this.paths.GamesFolder)) {
             fs.mkdirSync(this.paths.GamesFolder, { recursive: true });
         }
-        let data = JSON.stringify(this.getGameObject());
+        let data = JSON.stringify(this.getGameObject(true));
         fs.writeFileSync(gameFilePath, data);
         console.log(`game ${this.gameId} saved.`);
     };
@@ -339,6 +440,11 @@ class ChessGame {
         this.depthWhite = data.depthWhite === undefined ? 10 : data.depthWhite;
         this.depthBlack = data.depthBlack === undefined ? 10 : data.depthBlack;
         this.chess.load(data.fen);
+        this.playerLogin = data.playerLogin;
+        this.authorizationMethod = data.authorizationMethod;
+        this.playerJWT = data.playerJWT;
+        this.playerLocalToken = data.playerLocalToken;
+        this.playerId = data.playerId;
     };
 
     loadFromFile = () => {
