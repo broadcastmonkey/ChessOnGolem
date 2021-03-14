@@ -253,6 +253,7 @@ class ChessGame {
         if (this.turnType === TurnType.GOLEM) this.moves[this.stepId].move = move;
         else this.moves[this.stepId].move = move.from + ":" + move.to;
         this.moves[this.stepId].calculated = true;
+        this.moves[this.stepId].time = Date.now();
         this.moves[this.stepId].fen = this.chess.fen();
 
         this.refreshMoves();
@@ -292,9 +293,10 @@ class ChessGame {
             this.winnerType = this.moves[this.stepId].winnerType;
 
             this.gameFinishedTime = Date.now();
-
+            this.saveToFile();
             return MoveStatus.GAME_FINISHED;
         }
+        this.saveToFile();
         return MoveStatus.GAME_CONTINUES;
     };
     calculationCompleted = async (data) => {
