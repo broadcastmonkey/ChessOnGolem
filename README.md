@@ -5,7 +5,7 @@
 This project was created as an entry to Golem Hackathon 12/2020.
 
 The other part of project - Chess on Golem Viewer (react app that works as a GUI for Chess on Golem ) can be viewed here:
-https://broadcastmonkey/ChessOnGolemViewer
+https://github.com/broadcastmonkey/ChessOnGolemViewer
 
 It's purpose is to show that any state based game / problem can be run in Golem Network and solved interactively by provider nodes.
 
@@ -25,13 +25,15 @@ Hybrid strategies might be also used, e.g.: use more computing power at the begi
 
 ### DEMO's
 
-Demo v0.3
+DEMO v0.4 // march 2021
+
+Demo v0.3 // january 2021
 https://www.youtube.com/watch?v=Wp_lJEeN7UA&feature=youtu.be&ab_channel=Pawe%C5%82Burgchardt
 
-Demo v0.2
+Demo v0.2 // january 2021
 https://www.youtube.com/watch?v=C65uTAZAsRA&list=UUxg1Vq50vwy7Pm3kFwb0ZQg&index=2&ab_channel=Pawe%C5%82Burgchardt
 
-Demo v0.1 (problem with some providers' payments ==> invoices that are way too huge)
+Demo v0.1 // january 2021 (problem with some providers' payments ==> invoices that are way too huge)
 https://www.youtube.com/watch?v=cTD0zq7jURM&list=UUxg1Vq50vwy7Pm3kFwb0ZQg&index=3&ab_channel=Pawe%C5%82Burgchardt
 
 Presentation:
@@ -115,7 +117,7 @@ React application that serves as GUI for displaying chess game progress for Ches
 It displays game progress and some interesting stats regarding provider nodes that took part in calculations.
 
 There is live demo available at:
-http://chess-on-golem-viewer.herokuapp.com/
+https://chessongolem.app
 
 If It's not currently running you can request start at pawel.burgchardt [ A-T] gmail.com
 
