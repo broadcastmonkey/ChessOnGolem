@@ -28,6 +28,7 @@ performGolemCalculations = async (moveData) => {
     const { chess, ...dataForLogger } = moveData;
     debugLog("performGolemCalculations", dataForLogger);
     let subnetTag = process.env.GOLEM_SUBNET;
+    let driver = process.env.GOLEM_PAYMENT_DRIVER;
     debugLog(`Using subnet: ${subnetTag}`);
     const { gameId, stepId, depth } = moveData;
     const taskId = getTaskIdHash(gameId, stepId);
@@ -107,7 +108,7 @@ performGolemCalculations = async (moveData) => {
         max_workers: 13,
         timeout, //5 min to 30 min
         budget: "0.02",
-        driver: "zksync",
+        driver: driver,
         subnet_tag: subnetTag,
         network: "rinkeby",
 
