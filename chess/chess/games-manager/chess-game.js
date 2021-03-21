@@ -458,10 +458,12 @@ class ChessGame {
                 return false;
             }
             let lastMove = this.moves[this.moves.length - 1];
-            if (this.calculated) {
+            if (lastMove && lastMove.calculated === true) {
                 console.log("last step calculated, starting new step");
                 this.turnId =
                     lastMove.turnId === PlayerType.WHITE ? PlayerType.BLACK : PlayerType.WHITE;
+                this.turnType =
+                    lastMove.playerType === TurnType.PLAYER ? TurnType.GOLEM : TurnType.PLAYER;
                 this.stepId = lastMove.stepId + 1;
             }
             console.log(`game ${this.gameId} loaded from file.`);
