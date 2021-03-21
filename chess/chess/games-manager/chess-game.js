@@ -464,6 +464,9 @@ class ChessGame {
                     lastMove.turnId === PlayerType.WHITE ? PlayerType.BLACK : PlayerType.WHITE;
                 this.turnType =
                     lastMove.playerType === TurnType.PLAYER ? TurnType.GOLEM : TurnType.PLAYER;
+
+                this.globalTurn =
+                    lastMove.turnId === PlayerType.WHITE ? PlayerType.BLACK : PlayerType.WHITE;
                 this.stepId = lastMove.stepId + 1;
             }
             console.log(`game ${this.gameId} loaded from file.`);
