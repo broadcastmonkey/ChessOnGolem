@@ -25,7 +25,6 @@ Hybrid strategies might be also used, e.g.: use more computing power at the begi
 
 ### DEMO's
 
-DEMO v0.4 // march 2021
 
 Demo v0.3 // january 2021
 https://www.youtube.com/watch?v=Wp_lJEeN7UA&feature=youtu.be&ab_channel=Pawe%C5%82Burgchardt
@@ -116,7 +115,7 @@ React application that serves as GUI for displaying chess game progress for Ches
 
 It displays game progress and some interesting stats regarding provider nodes that took part in calculations.
 
-There is live demo available at:
+There is live app available at:
 https://chessongolem.app
 
 If It's not currently running you can request start at pawel.burgchardt [ A-T] gmail.com
